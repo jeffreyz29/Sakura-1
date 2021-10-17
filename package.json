@@ -1,0 +1,38 @@
+{
+	"author": "Haitei",
+	"dependencies": {
+		"@prisma/client": "^3.2.1",
+		"@sapphire/decorators": "^3.1.1",
+		"@sapphire/framework": "^2.0.0",
+		"discord.js": "^13.2.0",
+		"dotenv": "^10.0.0",
+		"pretty-ms": "^7.0.1",
+		"prisma": "^3.2.1"
+	},
+	"devDependencies": {
+		"@types/rimraf": "^3",
+		"rimraf": "^3.0.2",
+		"typescript": "beta"
+	},
+    "engines": {
+        "node": ">=16.6.0"
+    },
+    "imports": {
+        "#config": "./dist/config.js",
+        "#constants": "./dist/lib/utility/constants.js",
+        "#structures": "./dist/lib/structures/index.js",
+        "#types": "./dist/lib/types/index.js",
+        "#utils": "./dist/lib/utility/utils.js"
+    },
+    "license": "MIT",
+    "main": "dist/bot.js",
+    "name": "sakura",
+    "packageManager": "yarn@3.0.2",
+    "scripts": {
+        "build": "yarn clean && tsc",
+        "clean": "rimraf dist",
+        "dev": "yarn build && clear && yarn start",
+        "start": "node -r dotenv/config dist/bot.js"
+    },
+    "type": "module"
+}

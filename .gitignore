@@ -1,0 +1,17 @@
+# Dist
+dist
+
+# Environment
+.env
+
+# Packages
+node_modules
+
+# Random
+.vscode
+assets
+prisma/migrations
+
+# Yarn
+.yarn/cache
+.yarn/install-state.gz
