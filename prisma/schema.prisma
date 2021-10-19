@@ -1,0 +1,35 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+model Invite {
+    guildId     BigInt
+    code        String
+    expiresAt   DateTime?
+    isPermanent Boolean   @default(false)
+    isValid     Boolean
+
+    @@unique([guildId, code])
+    @@map("invite")
+}
+
+model Setting {
+    guildId            BigInt    @id
+    checkChannelId     BigInt?
+    additionalRoleId   BigInt?
+    categoryChannelIds BigInt[]
+    ignoreChannelIds   BigInt[]
+    checkEmbedColor    Int       @default(16316671)
+    lastInviteCheckAt  DateTime?
+
+    @@unique([guildId])
+    @@map("setting")
+}
