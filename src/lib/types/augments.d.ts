@@ -2,7 +2,7 @@ import { Events } from '#constants'
 import type { Settings } from '#structures'
 import Prisma from '@prisma/client'
 import { Awaitable, UserError } from '@sapphire/framework'
-import type { ApplicationCommandData, ApplicationCommandOptionData, ApplicationCommandTypes, CommandInteraction, CommandInteractionOptionResolver } from 'discord.js'
+import type { ApplicationCommandData, ApplicationCommandOption, ApplicationCommandOptionData, ApplicationCommandTypes, CommandInteraction, CommandInteractionOptionResolver } from 'discord.js'
 import type PQueue from 'p-queue'
 
 declare module 'discord.js' {
