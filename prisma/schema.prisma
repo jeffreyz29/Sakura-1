@@ -31,7 +31,7 @@ model Setting {
     checkEmbedColor    Int       @default(16316671)
     lastInviteCheckAt  DateTime?
     inCheck            Boolean   @default(false)
-    active             Boolean   @default(false)
+    active             Boolean   @default(true)
 
     @@unique([guildId])
     @@map("setting")

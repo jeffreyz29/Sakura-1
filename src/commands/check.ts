@@ -2,7 +2,7 @@ import { INVITE_CHECK_COOLDOWN } from '#config'
 import { EVENTS, PRIORITY } from '#constants'
 import { SakuraCommand } from '#structures'
 import { CategoryCounts, type SakuraCommandOptions } from '#types'
-import { extractCodes, fetchInvite } from '#utils'
+import { extractCodes, fetchInvite, isNewsOrTextChannel } from '#utils'
 import { ApplyOptions } from '@sapphire/decorators'
 import type { GuildBasedChannelTypes } from '@sapphire/discord.js-utilities'
 import { type CategoryChannel, type CommandInteraction, type CommandInteractionOptionResolver, Formatters, type MessageEmbed, type NewsChannel, type TextChannel } from 'discord.js'
@@ -47,7 +47,7 @@ export class CheckCommand extends SakuraCommand {
         const { guild } = interaction
         const checkChannel = guild.channels.cache.get(interaction.channelId)
 
-        if (!checkChannel.isText()) {
+        if (!isNewsOrTextChannel(checkChannel)) {
             await client.emit(EVENTS.INTERACTION_ERROR, new Error('INSERT_MESSAGE_HERE.'), { interaction, options })
             return
         }
@@ -61,7 +61,7 @@ export class CheckCommand extends SakuraCommand {
         const sortedCategoriesToCheck = guild.channels.cache
             .filter(isAddedCategoryChannel)
             .sort((c1, c2) => c1.position - c2.position)
-        const shouldCheckChannel = (channel: GuildBasedChannelTypes): channel is NewsChannel | TextChannel => channel.isText() && !ignoreChannelIds.includes(BigInt(channel.id))
+        const shouldCheckChannel = (channel: GuildBasedChannelTypes): channel is NewsChannel | TextChannel => isNewsOrTextChannel(channel) && !ignoreChannelIds.includes(BigInt(channel.id))
         const knownCodes = await invites.read(guildId, false)
 
         for (const { children, name } of sortedCategoriesToCheck.values()) {

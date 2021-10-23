@@ -1,11 +1,11 @@
-import { Events } from '#constants'
+import { EVENTS } from '#constants'
 import { ApplyOptions } from '@sapphire/decorators'
 import { isDMChannel } from '@sapphire/discord.js-utilities'
 import { Listener, UserError, type ListenerOptions } from '@sapphire/framework'
 import { Constants, type Interaction, Permissions } from 'discord.js'
 
 @ApplyOptions<ListenerOptions>({ event: Constants.Events.INTERACTION_CREATE })
-export class GenesisListener extends Listener {
+export class SakuraListener extends Listener {
     public async run(interaction: Interaction) {
         const { channel, client, guild } = interaction
         const me = guild.me ?? (client.id
@@ -25,25 +25,25 @@ export class GenesisListener extends Listener {
         const command = this.container.stores.get('commands').get(interaction.commandName)
 
         if (!command) {
-            client.emit(Events.UNKNOWN_INTERACTION, interaction)
+            client.emit(EVENTS.UNKNOWN_INTERACTION, interaction)
             return
         }
 
         const { memberPermissions, options } = interaction
 
         if (!memberPermissions.has('ADMINISTRATOR')) {
-            client.emit(Events.INTERACTION_DENIED, new UserError({ identifier: 'UserPermissions', message: `Only administrators may run commands with ${ client.user }.` }), interaction)
+            client.emit(EVENTS.INTERACTION_DENIED, new UserError({ identifier: 'UserPermissions', message: `Only administrators may run commands with ${ client.user }.` }), interaction)
             return
         }
 
 		try {
-			client.emit(Events.INTERACTION_RUN, interaction, options)		
+			client.emit(EVENTS.INTERACTION_RUN, interaction, options)		
             const result = await command.interact(interaction, options)
-            client.emit(Events.INTERACTION_SUCCESS, { interaction, options, result })
+            client.emit(EVENTS.INTERACTION_SUCCESS, { interaction, options, result })
 		} catch (error) {
-            client.emit(Events.INTERACTION_ERROR, error as Error, { interaction, options })
+            client.emit(EVENTS.INTERACTION_ERROR, error as Error, { interaction, options })
 		} finally {
-            client.emit(Events.INTERACTION_FINISH, interaction, options)
+            client.emit(EVENTS.INTERACTION_FINISH, interaction, options)
 		}
     }
 

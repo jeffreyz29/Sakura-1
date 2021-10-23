@@ -4,7 +4,7 @@ import { Listener, type ListenerOptions } from '@sapphire/framework'
 import { Constants } from 'discord.js'
 
 @ApplyOptions<ListenerOptions>({ event: Constants.Events.CLIENT_READY, once: true })
-export class GenesisListener extends Listener {
+export class SakuraListener extends Listener {
 	public async run() {
 		const { client, settings } = this.container
 

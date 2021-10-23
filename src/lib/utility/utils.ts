@@ -2,8 +2,7 @@ import { ENVIRONMENT, GUILD_ID } from '#config'
 import { DiscordInviteRegex } from '#constants'
 import { ChannelTypes } from '@sapphire/discord.js-utilities'
 import { container } from '@sapphire/framework'
-import type { Collection, DiscordAPIError, Invite, Message, NewsChannel, TextChannel } from 'discord.js'
-import { type APIInteractionDataResolvedChannel, ChannelType } from 'discord-api-types/v9'
+import type { Collection, Invite, Message, NewsChannel, TextChannel } from 'discord.js'
 
 export const addCommas = (num: number) => num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
 
@@ -26,6 +25,10 @@ export const fetchInvite = (code: string) => (): Promise<Invite> => {
 	return container.client
 		.fetchInvite(code)
 		.catch(() => null)
+}
+
+export const isNewsOrTextChannel = (channel: ChannelTypes): channel is NewsChannel | TextChannel => {
+	return ['GUILD_NEWS', 'GUILD_TEXT'].includes(channel.type)
 }
 
 export const syncCommands = async () => {

@@ -8,7 +8,8 @@ export class Invites {
 
     public async createUncheckedCodes(guildId: bigint, codes: string[]) {
         await container.prisma.invite.createMany({
-            data: codes.map(code => ({ guildId, code }))
+            data: codes.map(code => ({ guildId, code })),
+            skipDuplicates: true
         })
 
         if (!container.settings.read(guildId, 'inCheck'))

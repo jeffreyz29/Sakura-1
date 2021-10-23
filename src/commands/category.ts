@@ -1,7 +1,7 @@
 import { EVENTS } from '#constants'
 import { SakuraCommand } from '#structures'
 import type { SakuraCommandOptions } from '#types'
-import { extractCodes } from '#utils'
+import { extractCodes, isNewsOrTextChannel } from '#utils'
 import { ApplyOptions } from '@sapphire/decorators'
 import type { CategoryChannel, CommandInteraction, CommandInteractionOptionResolver, MessageEmbed } from 'discord.js'
 
@@ -87,9 +87,9 @@ export class CategoryCommand extends SakuraCommand {
         for (const channel of category.children.values()) {
             if (!channel)
                 continue
-            if (!channel.isText())
+            if (!isNewsOrTextChannel(channel))
                 continue
-            if (!channel.lastMessageId)
+            if (!channel?.lastMessageId)
 				continue
             const messages = await channel.messages.fetch({ limit: 10 })
 
