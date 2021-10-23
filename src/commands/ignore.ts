@@ -1,4 +1,4 @@
-import { Events } from '#constants'
+import { EVENTS } from '#constants'
 import { SakuraCommand } from '#structures'
 import type { SakuraCommandOptions } from '#types'
 import { ApplyOptions } from '@sapphire/decorators'
@@ -27,7 +27,7 @@ import type { CommandInteraction, CommandInteractionOptionResolver, MessageEmbed
             options: [
                 {
                     channelTypes: ['GUILD_NEWS', 'GUILD_TEXT'],
-                    description: 'The channel to add.',
+                    description: 'The channel to remove.',
 					name: 'channel',
 					type: 'CHANNEL',
 					required: true
@@ -47,7 +47,7 @@ export class IgnoreCommand extends SakuraCommand {
         const channel = options.getChannel('channel')
 
         if (!channel) {
-            await client.emit(Events.INTERACTION_ERROR, new Error('No channel found.'), { interaction, options })
+            await client.emit(EVENTS.INTERACTION_ERROR, new Error('No channel found.'), { interaction, options })
             return
         }
 
@@ -57,11 +57,11 @@ export class IgnoreCommand extends SakuraCommand {
         const inList = list.includes(channelId)
 
         if ((subcommand === 'add') && inList) {
-            await client.emit(Events.INTERACTION_ERROR, new Error('This channel is already ignored.'), { interaction, options })
+            await client.emit(EVENTS.INTERACTION_ERROR, new Error('This channel is already ignored.'), { interaction, options })
             return
         }
         if ((subcommand === 'remove') && !inList) {
-            await client.emit(Events.INTERACTION_ERROR, new Error('This channel is not in the "ignored channels" list.'), { interaction, options })
+            await client.emit(EVENTS.INTERACTION_ERROR, new Error('This channel is not in the "ignored channels" list.'), { interaction, options })
             return
         }
 

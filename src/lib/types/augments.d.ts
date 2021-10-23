@@ -1,5 +1,5 @@
 import { Events } from '#constants'
-import type { Settings } from '#structures'
+import type { Invites, Settings } from '#structures'
 import Prisma from '@prisma/client'
 import { Awaitable, UserError } from '@sapphire/framework'
 import type { ApplicationCommandData, ApplicationCommandOption, ApplicationCommandOptionData, ApplicationCommandTypes, CommandInteraction, CommandInteractionOptionResolver } from 'discord.js'
@@ -24,14 +24,11 @@ declare module '@sapphire/framework' {
 		interact(interaction: CommandInteraction, options: CommandInteractionOptionResolver) :Awaitable<unknown>
 		getCommandData(): ApplicationCommandData
 	}
-
-	interface CommandOptions {
-		parameters?: ApplicationCommandOption[]
-	}
 }
 
 declare module '@sapphire/pieces' {
 	interface Container {
+		invites: Invites
 		prisma: Prisma.PrismaClient
 		queue: PQueue
 		settings: Settings

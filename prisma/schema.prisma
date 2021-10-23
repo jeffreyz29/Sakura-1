@@ -14,8 +14,9 @@ model Invite {
     guildId     BigInt
     code        String
     expiresAt   DateTime?
-    isPermanent Boolean   @default(false)
-    isValid     Boolean
+    isPermanent Boolean?
+    isValid     Boolean?
+    isChecked   Boolean   @default(false)
 
     @@unique([guildId, code])
     @@map("invite")
@@ -29,6 +30,8 @@ model Setting {
     ignoreChannelIds   BigInt[]
     checkEmbedColor    Int       @default(16316671)
     lastInviteCheckAt  DateTime?
+    inCheck            Boolean   @default(false)
+    active             Boolean   @default(false)
 
     @@unique([guildId])
     @@map("setting")
