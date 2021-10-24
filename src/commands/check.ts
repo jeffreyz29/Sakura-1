@@ -108,7 +108,7 @@ export class CheckCommand extends SakuraCommand {
                     } else {
                         const invite = await queue.add(fetchInvite(code), { priority: PRIORITY.INVITE_CHECK })
                         const expiresAt = invite?.expiresAt ?? null
-                        const isPermanent = !Boolean(expiresAt) && !Boolean(invite.maxAge) && !Boolean(invite.maxUses)
+                        const isPermanent = !Boolean(expiresAt) && !Boolean(invite?.maxAge) && !Boolean(invite?.maxUses)
                         isValid = Boolean(invite)
 
                         await invites.createCheckedCode(guildId, code, expiresAt, isPermanent, isValid)
