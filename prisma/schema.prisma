@@ -10,6 +10,28 @@ generator client {
     provider = "prisma-client-js"
 }
 
+model Audit {
+    id        Int        @id @default(autoincrement())
+    userId    BigInt
+    event     AuditEvent
+    metadata  Json
+    timestamp DateTime   @default(now())
+
+    @@unique([id])
+    @@map("audit")
+}
+
+enum AuditEvent {
+    CHECKED_CODE_ADD
+    INVITE_CHECK_START
+    INVITE_CHECK_FINISH
+    SETTING_CREATE
+    SETTING_DELETE
+    SETTING_UPDATE
+    UNCHECKED_CODE_ADD
+    UNCHECKED_CODE_UPDATE
+}
+
 model Invite {
     guildId     BigInt
     code        String
@@ -33,7 +55,8 @@ model Setting {
     checkEmbedColor    Int       @default(16316671)
     lastInviteCheckAt  DateTime?
     inCheck            Boolean   @default(false)
-    active             Boolean   @default(true)
+    createdAt          DateTime  @default(now())
+    updatedAt          DateTime  @updatedAt
 
     @@unique([guildId])
     @@map("setting")

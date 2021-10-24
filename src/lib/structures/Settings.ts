@@ -11,6 +11,7 @@ export class Settings {
             return
 
         const setting = await container.prisma.setting.create({ data: { guildId } })
+		await container.audits.create(null, 'SETTING_CREATE', { guildId })
         this.#settings.set(guildId, setting) 
 	}
 
@@ -19,6 +20,7 @@ export class Settings {
             return
 
         await container.prisma.setting.delete({ where: { guildId } })
+		await container.audits.create(null, 'SETTING_DELETE', { guildId })
         this.#settings.delete(guildId) 
 	}
 
@@ -41,7 +43,9 @@ export class Settings {
         if (!this.#settings.has(guildId))
             return  
 
-        const setting = await container.prisma.setting.update({ data, where: { guildId } })
-        this.#settings.set(guildId, setting)
+		const oldValue = this.#settings.get(guildId)
+        const newValue = await container.prisma.setting.update({ data, where: { guildId } })
+		await container.audits.create(null, 'SETTING_UPDATE', { oldValue, newValue })
+        this.#settings.set(guildId, newValue)
 	}
 }

@@ -1,16 +1,18 @@
-import { Invite } from '@prisma/client'
+import { AuditEvent, Invite } from '@prisma/client'
 import { container } from '@sapphire/framework'
 
 export class Invites {
     public async createCheckedCode(guildId: bigint, code: string, expiresAt: Date, isPermanent: boolean, isValid: boolean) {
         await container.prisma.invite.create({ data: { guildId, code, expiresAt, isPermanent, isValid, isChecked: true } })
+        await container.audits.create(null, 'CHECKED_CODE_ADD', { guildId, code, expiresAt, isPermanent, isValid, isChecked: true })
     }
 
     public async createUncheckedCodes(guildId: bigint, codes: string[]) {
-        await container.prisma.invite.createMany({
-            data: codes.map(code => ({ guildId, code })),
-            skipDuplicates: true
-        })
+        const inviteData = codes.map(code => ({ guildId, code }))
+        const auditData: { userId: null, event: AuditEvent, metadata: object }[] = codes.map(code => ({ userId: null, event: 'UNCHECKED_CODE_ADD', metadata: { guildId, code } }))
+
+        await container.prisma.invite.createMany({ data: inviteData, skipDuplicates: true })        
+        await container.audits.createMany(auditData)
 
         if (!container.settings.read(guildId, 'inCheck'))
             await container.settings.update(guildId, { inCheck: true })
@@ -55,6 +57,7 @@ export class Invites {
             data: { ...payload, isChecked: true },
             where: { guildId_code: { guildId, code } }
         })
+        await container.audits.create(null, 'UNCHECKED_CODE_UPDATE', { guildId, code, ...payload, isChecked: true })
 
         const uncheckedCodeCount = await container.prisma.invite.count({ where: { guildId, isChecked: false } })
 

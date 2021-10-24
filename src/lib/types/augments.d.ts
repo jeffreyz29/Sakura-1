@@ -1,5 +1,5 @@
 import { Events } from '#constants'
-import type { Invites, Schedules, Settings, TaskStore } from '#structures'
+import type { Audits, Invites, Schedules, Settings, TaskStore } from '#structures'
 import Prisma from '@prisma/client'
 import { Awaitable, UserError } from '@sapphire/framework'
 import type { ApplicationCommandData, ApplicationCommandOption, ApplicationCommandOptionData, ApplicationCommandTypes, CommandInteraction, CommandInteractionOptionResolver } from 'discord.js'
@@ -28,6 +28,7 @@ declare module '@sapphire/framework' {
 
 declare module '@sapphire/pieces' {
 	interface Container {
+		audits: Audits
 		invites: Invites
 		prisma: Prisma.PrismaClient
 		queue: PQueue

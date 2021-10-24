@@ -17,7 +17,7 @@ export class CheckCommand extends SakuraCommand {
     public async interact(interaction: CommandInteraction, options: CommandInteractionOptionResolver) {
         await interaction.deferReply()
 
-        const { client, invites, queue, settings } = this.container
+        const { audits, client, invites, queue, settings } = this.container
         const guildId = BigInt(interaction.guildId)
         const { categoryChannelIds, checkChannelId, checkEmbedColor, ignoreChannelIds, inCheck, lastInviteCheckAt = new Date } = settings.read(guildId)
         const now = Date.now()
@@ -53,6 +53,7 @@ export class CheckCommand extends SakuraCommand {
         }
 
         await settings.update(guildId, { inCheck: true })
+        await audits.create(BigInt(interaction.user.id), 'INVITE_CHECK_START', { guildId })
         const timerStart = hrtime.bigint()
         const startEmbed: Partial<MessageEmbed> = { color: checkEmbedColor, description: `${ client.user.username } is checking your invites now!` }
         await checkChannel.send({ embeds: [startEmbed] })
@@ -130,10 +131,30 @@ export class CheckCommand extends SakuraCommand {
         const timerEnd = hrtime.bigint()
         const elapsedTime = timerEnd - timerStart
 		const endEmbed: Partial<MessageEmbed> = { color: checkEmbedColor, description: 'Invite check complete!' }
-		const resultsEmbed = this.formatResultsEmbed(checkCounts, elapsedTime, checkEmbedColor)
+        const { totalBad, totalChannels, totalGood, totalInvites } = this.count(checkCounts)
+		const resultsEmbed = this.formatResultsEmbed(totalBad, totalChannels, totalGood, totalInvites, elapsedTime, checkEmbedColor)
 		
 		await checkChannel.send({ embeds: [endEmbed, resultsEmbed] })
         await settings.update(guildId, { inCheck: false }) 
+        await audits.create(BigInt(interaction.user.id), 'INVITE_CHECK_FINISH', { elapsedTime, guildId, totalBad, totalChannels, totalGood, totalInvites })
+    }
+
+    private count(categories: CategoryCounts[]) {
+        let totalBad = 0, totalChannels = 0, totalGood = 0
+
+        for (const { channels, issues, manual } of categories) {
+            totalChannels += channels.length + issues + manual.length
+
+			if (!channels.length)
+				continue
+
+            for (const { bad, good } of channels) {
+                totalBad += bad
+                totalGood += good
+            }
+        }
+
+        return { totalBad, totalChannels, totalGood, totalInvites: totalBad + totalGood }
     }
 
 	private formatCategoryEmbed({ channels, issues, manual, name}: CategoryCounts, color: number) {
@@ -160,22 +181,7 @@ export class CheckCommand extends SakuraCommand {
 		return embed
 	}
 
-    private formatResultsEmbed(categories: CategoryCounts[], elapsedTime: bigint, color: number) {
-        let totalBad = 0, totalChannels = 0, totalGood = 0
-
-        for (const { channels, issues, manual } of categories) {
-            totalChannels += channels.length + issues + manual.length
-
-			if (!channels.length)
-				continue
-
-            for (const { bad, good } of channels) {
-                totalBad += bad
-                totalGood += good
-            }
-        }
-
-        const totalInvites = totalBad + totalGood    
+    private formatResultsEmbed(totalBad: number, totalChannels: number, totalGood: number, totalInvites: number, elapsedTime: bigint, color: number) {   
         const embed: Partial<MessageEmbed> = {
             color,
             fields: [
