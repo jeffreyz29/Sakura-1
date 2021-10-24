@@ -17,6 +17,8 @@ model Invite {
     isPermanent Boolean?
     isValid     Boolean?
     isChecked   Boolean   @default(false)
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
 
     @@unique([guildId, code])
     @@map("invite")

@@ -13,3 +13,8 @@ export enum PRIORITY {
 	CATEGORY,
 	INVITE_CHECK
 }
+
+export enum TASK_RESULT {
+	ONE_AND_DONE,
+	REPEAT
+}

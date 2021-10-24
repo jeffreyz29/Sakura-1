@@ -1,4 +1,7 @@
 export * from './Invites.js'
 export * from './SakuraClient.js'
 export * from './SakuraCommand.js'
+export * from './Schedules.js'
 export * from './Settings.js'
+export * from './Task.js'
+export * from './TaskStore.js'

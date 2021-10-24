@@ -38,6 +38,17 @@ export class Invites {
             return invites
         }
     }
+    
+	public async readUncheckedCodes() {
+		const uncheckedCodes = await container.prisma.invite.findMany({
+			orderBy: { createdAt: 'asc' },
+			select: { guildId: true, code: true },
+			take: 100,
+			where: { isChecked: false }			
+		})
+
+		return uncheckedCodes
+	}
 
     public async update(guildId: bigint, code: string, payload: { expiresAt: Date, isPermanent: boolean, isValid: boolean }) {
         await container.prisma.invite.update({
