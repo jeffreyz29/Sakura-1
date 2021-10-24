@@ -1,5 +1,5 @@
 import { TOKEN } from '#config'
-import { Settings } from '#structures'
+import { Schedules, Settings } from '#structures'
 import Prisma from '@prisma/client'
 import { container, SapphireClient } from '@sapphire/framework'
 import { Intents, Options } from 'discord.js'
@@ -37,6 +37,7 @@ export class SakuraClient extends SapphireClient {
     public async setup() {
 		container.prisma = new Prisma.PrismaClient()
 		container.queue = new PQueue({ autoStart: true, concurrency: 1, interval: 1250, intervalCap: 1 })
+		container.schedules = new Schedules()
 		container.settings = new Settings()
     }
 
