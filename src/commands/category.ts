@@ -3,7 +3,7 @@ import { SakuraCommand } from '#structures'
 import type { SakuraCommandOptions } from '#types'
 import { extractCodes, isNewsOrTextChannel } from '#utils'
 import { ApplyOptions } from '@sapphire/decorators'
-import { type CategoryChannel, type CommandInteraction, type CommandInteractionOptionResolver, Formatters, type MessageEmbed, Permissions } from 'discord.js'
+import { type CategoryChannel, type CommandInteraction, type CommandInteractionOptionResolver, type MessageEmbed, Permissions } from 'discord.js'
 
 @ApplyOptions<SakuraCommandOptions>({
     description: 'Add to or remove channels from the category list.',
@@ -74,7 +74,7 @@ export class CategoryCommand extends SakuraCommand {
 
             if (issues.length) {
                 // @ts-expect-error
-                const message = `I am unable to read ${ new Intl.ListFormat().format(issues.map(issue => Formatters.channelMention)) }. `
+                const message = `I am unable to read ${ new Intl.ListFormat().format(issues.map(issue => `<#${ issue.id }>`)) }. `
                 await client.emit(EVENTS.INTERACTION_ERROR, new Error(message), { interaction, options })
                 return
             } else 
