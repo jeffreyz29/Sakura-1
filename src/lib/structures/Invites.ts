@@ -52,12 +52,12 @@ export class Invites {
 		return uncheckedCodes
 	}
 
-    public async update(guildId: bigint, code: string, payload: { expiresAt: Date, isPermanent: boolean, isValid: boolean }) {
+    public async update(guildId: bigint, code: string, expiresAt: Date, isPermanent: boolean, isValid: boolean) {
         await container.prisma.invite.update({
-            data: { ...payload, isChecked: true },
+            data: { expiresAt, isPermanent, isValid, isChecked: true },
             where: { guildId_code: { guildId, code } }
         })
-        await container.audits.create(null, 'UNCHECKED_CODE_UPDATE', { guildId, code, ...payload, isChecked: true })
+        await container.audits.create(null, 'UNCHECKED_CODE_UPDATE', { guildId, code, expiresAt, isPermanent, isValid, isChecked: true })
 
         const uncheckedCodeCount = await container.prisma.invite.count({ where: { guildId, isChecked: false } })
 
