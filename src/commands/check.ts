@@ -53,7 +53,7 @@ export class CheckCommand extends SakuraCommand {
         }
 
         await settings.update(guildId, { inCheck: true })
-        await audits.create(BigInt(interaction.user.id), 'INVITE_CHECK_START', { guildId })
+        await audits.create('INVITE_CHECK_START', { guildId: interaction.guildId })
         const timerStart = hrtime.bigint()
         const startEmbed: Partial<MessageEmbed> = { color: checkEmbedColor, description: `${ client.user.username } is checking your invites now!` }
         await checkChannel.send({ embeds: [startEmbed] })
@@ -136,7 +136,7 @@ export class CheckCommand extends SakuraCommand {
 		
 		await checkChannel.send({ embeds: [endEmbed, resultsEmbed] })
         await settings.update(guildId, { inCheck: false }) 
-        await audits.create(BigInt(interaction.user.id), 'INVITE_CHECK_FINISH', { elapsedTime, guildId, totalBad, totalChannels, totalGood, totalInvites })
+        await audits.create('INVITE_CHECK_FINISH', { elapsedTime: Number(elapsedTime / BigInt(1e6)), guildId: interaction.guildId, totalBad, totalChannels, totalGood, totalInvites })
     }
 
     private count(categories: CategoryCounts[]) {
