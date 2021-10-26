@@ -9,10 +9,10 @@ import { CommandInteraction, Guild, MessageEmbed } from 'discord.js'
 })
 export class SettingsCommand extends SakuraCommand {
     public async interact(interaction: CommandInteraction) {
-        await interaction.deferReply({ fetchReply: true })
+        await interaction.deferReply()
         
         const { guild } = interaction
-        const settings = this.container.settings.read(BigInt(guild.id))
+        const { additionalRoleId, categoryChannelIds, checkChannelId, checkEmbedColor, ignoreChannelIds } = this.container.settings.read(BigInt(interaction.guildId))
         const embed: Partial<MessageEmbed> = {
             author: {
                 iconURL: guild.iconURL({ dynamic: true, size: 1024 }),
@@ -20,11 +20,11 @@ export class SettingsCommand extends SakuraCommand {
             },
             color: 0xF8F8FF,
             fields: [
-                { inline: false, name: 'Check channel', value: `${ guild.channels.cache.get(settings.checkChannelId.toString()) ?? 'No channel set.' }` },
-                { inline: false, name: 'Additional role', value: `${ guild.roles.cache.get(settings.additionalRoleId.toString()) ?? 'No role set.' }` },
-                { inline: false, name: 'Categories', value: this.formatChannelList(guild, settings.categoryChannelIds) ?? 'No categories added.' },
-                { inline: false, name: 'Ignored channels', value: this.formatChannelList(guild, settings.ignoreChannelIds) ?? 'No categories added.' },
-                { inline: false, name: 'Check embed color', value: `#${ settings.checkEmbedColor.toString(16).toUpperCase().padStart(6, '0') }` }
+                { inline: false, name: 'Check channel', value: `${ guild.channels.cache.get(checkChannelId?.toString()) ?? 'No channel set.' }` },
+                { inline: false, name: 'Additional role', value: `${ guild.roles.cache.get(additionalRoleId?.toString()) ?? 'No role set.' }` },
+                { inline: false, name: 'Categories', value: this.formatChannelList(guild, categoryChannelIds) ?? 'No categories added.' },
+                { inline: false, name: 'Ignored channels', value: this.formatChannelList(guild, ignoreChannelIds) ?? 'No categories added.' },
+                { inline: false, name: 'Check embed color', value: `#${ checkEmbedColor.toString(16).toUpperCase().padStart(6, '0') }` }
             ]           
         }
 

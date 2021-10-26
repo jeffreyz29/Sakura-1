@@ -2,7 +2,7 @@ import { EVENTS } from '#constants'
 import { ApplyOptions } from '@sapphire/decorators'
 import { isDMChannel } from '@sapphire/discord.js-utilities'
 import { Listener, UserError, type ListenerOptions } from '@sapphire/framework'
-import { Constants, type Interaction, Permissions } from 'discord.js'
+import { Constants, type Interaction, Permissions, PermissionString, CommandInteraction } from 'discord.js'
 
 @ApplyOptions<ListenerOptions>({ event: Constants.Events.INTERACTION_CREATE })
 export class SakuraListener extends Listener {
@@ -15,37 +15,58 @@ export class SakuraListener extends Listener {
 
         if (isDMChannel(channel))
             return false
-        if (!channel.permissionsFor(me).has(this.minimumPermissions, true))
+        if (!interaction.inCachedGuild())
             return
+        if (!channel.permissionsFor(me).has(this.minimumPermissions)) {
+            const missingPermissions = channel.permissionsFor(me).missing(this.minimumPermissions)
+            // @ts-expect-error
+            const message = `I am missing the ${ new Intl.ListFormat().format(missingPermissions) } ${ missingPermissions.length === 1 ? 'permission': 'permissions' } in order to run this command.`
+            client.emit(EVENTS.INTERACTION_DENIED, new UserError({ identifier: 'ClientPermissions', message }), interaction)
+            return
+        }
         if (interaction.user.bot)
             return
 		if (!interaction.isCommand())
 			return
 
-        const command = this.container.stores.get('commands').get(interaction.commandName)
+        const { settings, stores } = this.container
+        const { commandName } = interaction
+        const command = stores.get('commands').get(interaction.commandName)
+        const commandsThatUseSettings = ['category', 'check', 'ignore', 'set', 'settings']
+        const guildId = BigInt(interaction.guildId)
+
 
         if (!command) {
             client.emit(EVENTS.UNKNOWN_INTERACTION, interaction)
             return
         }
+        if (commandsThatUseSettings.includes(commandName) && !settings.read(guildId)) {
+            client.emit(EVENTS.INTERACTION_DENIED, new Error(`Please kick and reinvite ${ client.user.username }.`), interaction)
+            return
+        }
 
-        const { memberPermissions, options } = interaction
+        const { member, memberPermissions } = interaction
+        const additionalRoleId = settings.read(BigInt(guildId), 'additionalRoleId')
+        const isAdmin = memberPermissions.has('ADMINISTRATOR')
+        const hasAdditionalRole = additionalRoleId
+            ? member.roles.cache.has(additionalRoleId.toString())
+            : true
 
-        if (!memberPermissions.has('ADMINISTRATOR')) {
-            client.emit(EVENTS.INTERACTION_DENIED, new UserError({ identifier: 'UserPermissions', message: `Only administrators may run commands with ${ client.user }.` }), interaction)
+        if (!isAdmin && !hasAdditionalRole) {
+            client.emit(EVENTS.INTERACTION_DENIED, new UserError({ identifier: 'UserPermissions', message: `Only administrators${ additionalRoleId ? ` or those with the <@&${ additionalRoleId.toString() }> role ` : ' ' }may run commands with ${ client.user.username }.` }), interaction)
             return
         }
 
 		try {
-			client.emit(EVENTS.INTERACTION_RUN, interaction, options)		
-            const result = await command.interact(interaction, options)
-            client.emit(EVENTS.INTERACTION_SUCCESS, { interaction, options, result })
+			client.emit(EVENTS.INTERACTION_RUN, interaction)		
+            const result = await command.interact(interaction, interaction.options)
+            client.emit(EVENTS.INTERACTION_SUCCESS, interaction, result)
 		} catch (error) {
-            client.emit(EVENTS.INTERACTION_ERROR, error as Error, { interaction, options })
+            client.emit(EVENTS.INTERACTION_ERROR, error as Error, interaction)
 		} finally {
-            client.emit(EVENTS.INTERACTION_FINISH, interaction, options)
+            client.emit(EVENTS.INTERACTION_FINISH, interaction)
 		}
     }
 
-    private readonly minimumPermissions = new Permissions(['SEND_MESSAGES', 'USE_APPLICATION_COMMANDS', 'VIEW_CHANNEL']).freeze()
+    private readonly minimumPermissions = new Permissions(['READ_MESSAGE_HISTORY', 'SEND_MESSAGES', 'USE_APPLICATION_COMMANDS', 'VIEW_CHANNEL']).freeze()
 }

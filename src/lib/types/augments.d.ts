@@ -8,10 +8,10 @@ import type PQueue from 'p-queue'
 declare module 'discord.js' {
 	interface ClientEvents {
 		[Events.INTERACTION_DENIED]: [error: UserError, interaction: CommandInteraction]
-		[Events.INTERACTION_ERROR]: [error: Error, { interaction: CommandInteraction, options: CommandInteractionOptionResolver }]
-		[Events.INTERACTION_FINISH]: [interaction: CommandInteraction, options: CommandInteractionOptionResolver]
+		[Events.INTERACTION_ERROR]: [error: Error, interaction: CommandInteraction]
+		[Events.INTERACTION_FINISH]: [interaction: CommandInteraction]
 		[Events.INTERACTION_RUN]: [interaction: CommandInteraction, options: CommandInteractionOptionResolver]
-		[Events.INTERACTION_SUCCESS]: [{ interaction: CommandInteraction, options: CommandInteractionOptionResolver, result: Awaitable<unknown> }]
+		[Events.INTERACTION_SUCCESS]: [interaction: CommandInteraction, result: Awaitable<unknown>]
 		[Events.UNKNOWN_INTERACTION]: [interaction: CommandInteraction]
 	}
 }
@@ -21,7 +21,7 @@ declare module '@sapphire/framework' {
 		defaultPermission?: boolean
 		parameters?: ApplicationCommandOptionData[]
 		type: ApplicationCommandTypes
-		interact(interaction: CommandInteraction, options: CommandInteractionOptionResolver) :Awaitable<unknown>
+		interact(interaction: CommandInteraction, options: CommandInteractionOptionResolver): Awaitable<unknown>
 		getCommandData(): ApplicationCommandData
 	}
 }

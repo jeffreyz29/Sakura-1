@@ -3,7 +3,7 @@ import { SakuraCommand } from '#structures'
 import type { SakuraCommandOptions } from '#types'
 import { extractCodes, isNewsOrTextChannel } from '#utils'
 import { ApplyOptions } from '@sapphire/decorators'
-import type { CategoryChannel, CommandInteraction, CommandInteractionOptionResolver, MessageEmbed } from 'discord.js'
+import { type CategoryChannel, type CommandInteraction, type CommandInteractionOptionResolver, Formatters, type MessageEmbed, Permissions } from 'discord.js'
 
 @ApplyOptions<SakuraCommandOptions>({
     description: 'Add to or remove channels from the category list.',
@@ -66,8 +66,20 @@ export class CategoryCommand extends SakuraCommand {
             return
         }
 
-        if (subcommand === 'add')
-            await this.processCategory(category)
+        const { me } = interaction.guild
+
+        if (subcommand === 'add') {
+            const channels = [...category.children.values()]
+            const issues = channels.filter(channel => channel.isText() && !channel.permissionsFor(me).has(this.minimumPermissions))
+
+            if (issues.length) {
+                // @ts-expect-error
+                const message = `I am unable to read ${ new Intl.ListFormat().format(issues.map(issue => Formatters.channelMention)) }. `
+                await client.emit(EVENTS.INTERACTION_ERROR, new Error(message), { interaction, options })
+                return
+            } else 
+                await this.processCategory(category)
+        }
 
         const updatedList = (subcommand === 'add')
             ? [...list, channelId]
@@ -104,4 +116,6 @@ export class CategoryCommand extends SakuraCommand {
 
         await this.container.invites.createUncheckedCodes(guildId, codes)
     }
+
+    private readonly minimumPermissions = new Permissions(['READ_MESSAGE_HISTORY', 'VIEW_CHANNEL']).freeze()
 }
