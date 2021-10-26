@@ -9,6 +9,5 @@ import { Store } from '@sapphire/framework'
 export class TaskStore extends Store<Task> {
 	public constructor() {
 		super(Task as any, { name: 'tasks' })
-		this.container.stores.register(this)
 	}
 }
