@@ -119,7 +119,7 @@ export class CheckCommand extends SakuraCommand {
                         const isPermanent = !Boolean(expiresAt) && !Boolean(invite?.maxAge) && !Boolean(invite?.maxUses)
                         isValid = Boolean(invite)
 
-                        await invites.createCheckedCode(guildId, code, expiresAt, isPermanent, isValid, Boolean(knownCode))
+                        await invites.upsert(guildId, code, expiresAt, isPermanent, isValid)
                     }
 
                     isValid

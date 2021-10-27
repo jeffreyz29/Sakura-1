@@ -25,6 +25,7 @@ export class Settings {
 	}
 
 	public async init() {
+		await container.prisma.setting.updateMany({ data: { inCheck: false } })
 		const settings = await container.prisma.setting.findMany()
 
 		for (const setting of settings)

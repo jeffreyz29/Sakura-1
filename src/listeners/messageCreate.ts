@@ -11,17 +11,15 @@ export class SakuraListener extends Listener {
 
         const { invites, settings } = this.container
         const guildId = BigInt(message.guildId)
-        const { categoryChannelIds, checkChannelId, ignoreChannelIds, inCheck } = settings.read(guildId)
+        const { categoryChannelIds, checkChannelId, ignoreChannelIds } = settings.read(guildId)
         const categoryId = BigInt(message.channel?.parentId ?? 0)
         const channelId = BigInt(message.channelId)
 
-        if (inCheck)
-            return
         if (!categoryChannelIds.includes(categoryId))
             return
         if (ignoreChannelIds.includes(channelId))
             return
-        if (checkChannelId === checkChannelId)
+        if (checkChannelId === channelId)
             return
 
         const foundCodes = extractCodes(message)
@@ -29,6 +27,6 @@ export class SakuraListener extends Listener {
         if (!foundCodes.length)
             return
 
-        await invites.createUncheckedCodes(guildId, foundCodes)
+        await invites.create(guildId, foundCodes, true)
     }
 }

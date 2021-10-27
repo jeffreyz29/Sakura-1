@@ -3,7 +3,7 @@ import { SakuraCommand } from '#structures'
 import type { SakuraCommandOptions } from '#types'
 import { extractCodes, isNewsOrTextChannel } from '#utils'
 import { ApplyOptions } from '@sapphire/decorators'
-import { type CategoryChannel, type CommandInteraction, type CommandInteractionOptionResolver, type MessageEmbed, Permissions } from 'discord.js'
+import { type CategoryChannel, type CommandInteraction, type CommandInteractionOptionResolver, type Message, type MessageEmbed, Permissions, Collection } from 'discord.js'
 
 @ApplyOptions<SakuraCommandOptions>({
     description: 'Add to or remove channels from the category list.',
@@ -94,6 +94,7 @@ export class CategoryCommand extends SakuraCommand {
         const { invites } = this.container
         const guildId = BigInt(category.guildId)
         const knownCodes = await invites.read(guildId, true)
+        let categoryMessages = new Collection<string, Message>()
         const codes: string[] = []
         
         for (const channel of category.children.values()) {
@@ -109,16 +110,16 @@ export class CategoryCommand extends SakuraCommand {
             if (!messages.size)
                 continue
 
-            const foundCodes = extractCodes(messages)
-            const unknownCodes = foundCodes.filter(code => !knownCodes.includes(code))
-            
-            codes.push(...unknownCodes)
+            categoryMessages.concat(messages)
         }
 
-        if (!codes.length)
+        const foundCodes = extractCodes(categoryMessages)
+        const unknownCodes = foundCodes.filter(code => !knownCodes.includes(code))
+
+        if (!unknownCodes.length)
             return
 
-        await this.container.invites.createUncheckedCodes(guildId, codes)
+        await this.container.invites.create(guildId, unknownCodes)
     }
 
     private readonly minimumPermissions = new Permissions(['READ_MESSAGE_HISTORY', 'VIEW_CHANNEL']).freeze()

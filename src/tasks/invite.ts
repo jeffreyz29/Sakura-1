@@ -13,7 +13,7 @@ export class InviteTask extends Task {
             const isPermanent = !Boolean(expiresAt) && !Boolean(invite?.maxAge) && !Boolean(invite?.maxUses)
             const isValid = Boolean(invite)
 
-            await invites.update(guildId, code, expiresAt, isPermanent, isValid)
+            await invites.upsert(guildId, code, expiresAt, isPermanent, isValid)
         }
 		
 		return TASK_RESULT.REPEAT
