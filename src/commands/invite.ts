@@ -14,6 +14,8 @@ export class SupportCommand extends SakuraCommand {
 		const url = this.container.client.generateInvite({
 			disableGuildSelect: false,
 			permissions: [
+				Permissions.FLAGS.EMBED_LINKS,
+				Permissions.FLAGS.READ_MESSAGE_HISTORY,
                 Permissions.FLAGS.SEND_MESSAGES,
                 Permissions.FLAGS.USE_APPLICATION_COMMANDS,
                 Permissions.FLAGS.VIEW_CHANNEL

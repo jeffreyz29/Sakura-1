@@ -6,7 +6,7 @@ import type { CommandInteraction, MessageEmbed } from 'discord.js'
 import prettyMilliseconds from 'pretty-ms'
 
 @ApplyOptions<SakuraCommandOptions>({
-    description: 'Checks Discord API latency.',
+    description: 'Displays random metrics of interest.',
     type: 'CHAT_INPUT'
 })
 export class PingCommand extends SakuraCommand {
@@ -19,11 +19,10 @@ export class PingCommand extends SakuraCommand {
 			color: 0xF8F8FF,
 			description: [
 				`**Channels:** ${ addCommas(client.channels.cache.size) }`,
-				`**Guilds:** ${ addCommas(client.guilds.cache.size) }`,
+				`**Guild(s):** ${ addCommas(client.guilds.cache.size) }`,
 				`**RAM Usage:** ${ this.formatMemory(heapUsed) } MB (**Total:** ${ this.formatMemory(heapTotal) } MB)`,
 				`**Uptime:** ${ prettyMilliseconds(client.uptime ?? 0, { secondsDecimalDigits: 0 }) }`,
-			].join('\n'),
-			title: `${ client.user.username }`
+			].join('\n')
 		}
 
 		await interaction.editReply({ embeds: [embed] })

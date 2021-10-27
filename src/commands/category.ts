@@ -103,6 +103,7 @@ export class CategoryCommand extends SakuraCommand {
                 continue
             if (!channel?.lastMessageId)
 				continue
+                
             const messages = await channel.messages.fetch({ limit: 10 })
 
             if (!messages.size)
@@ -113,6 +114,9 @@ export class CategoryCommand extends SakuraCommand {
             
             codes.push(...unknownCodes)
         }
+
+        if (!codes.length)
+            return
 
         await this.container.invites.createUncheckedCodes(guildId, codes)
     }
