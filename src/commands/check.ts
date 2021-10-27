@@ -28,7 +28,8 @@ export class CheckCommand extends SakuraCommand {
             return
         }
         if (now <= (lastInviteCheckAt?.getTime() ?? 0) + INVITE_CHECK_COOLDOWN) {
-            await client.emit(EVENTS.INTERACTION_ERROR, new Error(`You may run an invite check again at ${ Formatters.time((lastInviteCheckAt?.getTime() ?? 0) + INVITE_CHECK_COOLDOWN) } (${ Formatters.time(lastInviteCheckAt.getTime() + INVITE_CHECK_COOLDOWN, 'R') })`), { interaction, options })
+            const seconds = Math.floor(((lastInviteCheckAt?.getTime() ?? 0) + INVITE_CHECK_COOLDOWN) / 1000)
+            await client.emit(EVENTS.INTERACTION_ERROR, new Error(`You may run an invite check again at ${ Formatters.time(seconds) } (${ Formatters.time(seconds, 'R') })`), { interaction, options })
             return   
         }
         if (!checkChannelId) {
