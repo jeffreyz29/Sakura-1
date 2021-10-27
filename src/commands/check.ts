@@ -44,8 +44,7 @@ export class CheckCommand extends SakuraCommand {
             return
         }
        
-        const { guild } = interaction
-        const checkChannel = await guild.channels.fetch(interaction.channelId)
+        const { channel: checkChannel, guild } = interaction
 
         if (!isNewsOrTextChannel(checkChannel)) {
             await client.emit(EVENTS.INTERACTION_ERROR, new Error(`${ checkChannel } is neither an announcement nor a text channel.`), { interaction, options })
