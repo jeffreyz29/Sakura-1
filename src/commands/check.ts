@@ -5,7 +5,7 @@ import { CategoryCounts, type SakuraCommandOptions } from '#types'
 import { extractCodes, fetchInvite, isNewsOrTextChannel } from '#utils'
 import { ApplyOptions } from '@sapphire/decorators'
 import type { GuildBasedChannelTypes } from '@sapphire/discord.js-utilities'
-import { type CategoryChannel, type CommandInteraction, type CommandInteractionOptionResolver, Formatters, type MessageEmbed, type NewsChannel, type TextChannel } from 'discord.js'
+import { type CategoryChannel, type CommandInteraction, type CommandInteractionOptionResolver, Formatters, type MessageEmbed, type NewsChannel, Permissions, type TextChannel } from 'discord.js'
 import { hrtime } from 'node:process'
 import prettyMilliseconds from 'pretty-ms'
 
@@ -27,8 +27,8 @@ export class CheckCommand extends SakuraCommand {
             await client.emit(EVENTS.INTERACTION_ERROR, new Error(`${ client.user.username } is still checking categories for this guild. Please try again at a later time.`), { interaction, options })
             return
         }
-        if (now <= lastInviteCheckAt.getTime() + INVITE_CHECK_COOLDOWN) {
-            await client.emit(EVENTS.INTERACTION_ERROR, new Error(`You may run an invite check again at ${ Formatters.time(lastInviteCheckAt.getTime() + INVITE_CHECK_COOLDOWN) } (${ Formatters.time(lastInviteCheckAt.getTime() + INVITE_CHECK_COOLDOWN, 'R') })`), { interaction, options })
+        if (now <= (lastInviteCheckAt?.getTime() ?? 0) + INVITE_CHECK_COOLDOWN) {
+            await client.emit(EVENTS.INTERACTION_ERROR, new Error(`You may run an invite check again at ${ Formatters.time((lastInviteCheckAt?.getTime() ?? 0) + INVITE_CHECK_COOLDOWN) } (${ Formatters.time(lastInviteCheckAt.getTime() + INVITE_CHECK_COOLDOWN, 'R') })`), { interaction, options })
             return   
         }
         if (!checkChannelId) {
@@ -45,10 +45,10 @@ export class CheckCommand extends SakuraCommand {
         }
        
         const { guild } = interaction
-        const checkChannel = guild.channels.cache.get(interaction.channelId)
+        const checkChannel = await guild.channels.fetch(interaction.channelId)
 
         if (!isNewsOrTextChannel(checkChannel)) {
-            await client.emit(EVENTS.INTERACTION_ERROR, new Error('INSERT_MESSAGE_HERE.'), { interaction, options })
+            await client.emit(EVENTS.INTERACTION_ERROR, new Error(`${ checkChannel } is neither an announcement nor a text channel.`), { interaction, options })
             return
         }
 
@@ -56,13 +56,17 @@ export class CheckCommand extends SakuraCommand {
         await audits.create('INVITE_CHECK_START', { guildId: interaction.guildId })
         const timerStart = hrtime.bigint()
         const startEmbed: Partial<MessageEmbed> = { color: checkEmbedColor, description: `${ client.user.username } is checking your invites now!` }
-        await checkChannel.send({ embeds: [startEmbed] })
+        await interaction.editReply({ embeds: [startEmbed] })    
         
         const isAddedCategoryChannel = (channel: GuildBasedChannelTypes): channel is CategoryChannel => (channel.type === 'GUILD_CATEGORY') && categoryChannelIds.includes(BigInt(channel.id))
         const sortedCategoriesToCheck = guild.channels.cache
             .filter(isAddedCategoryChannel)
             .sort((c1, c2) => c1.position - c2.position)
+
+        
+
         const shouldCheckChannel = (channel: GuildBasedChannelTypes): channel is NewsChannel | TextChannel => isNewsOrTextChannel(channel) && !ignoreChannelIds.includes(BigInt(channel.id))
+        const { me } = interaction.guild
         const knownCodes = await invites.read(guildId, false)
 
         for (const { children, name } of sortedCategoriesToCheck.values()) {
@@ -82,9 +86,12 @@ export class CheckCommand extends SakuraCommand {
 					counts.issues++
 					continue
 				}
+                const channelId = channel.id
 
-				const channelId = channel.id
-
+                if(!channel.permissionsFor(me).has(this.minimumPermissions)) {
+					counts.manual.push(channelId)
+					continue
+                }			
                 if (!channel.lastMessageId) {
                     counts.channels.push({ bad: 0, channelId, good: 0 })
                     continue
@@ -101,18 +108,18 @@ export class CheckCommand extends SakuraCommand {
 				let bad = 0, good = 0
 
 				for (const code of foundCodes) {
+                    const knownCode = knownCodes.get(code)
                     let isValid: boolean
 
-                    if (knownCodes.has(code)) {
-                        const invite = knownCodes.get(code)
-                        isValid = invite?.isPermanent || (invite?.isValid && (now < invite?.expiresAt.getTime()))
-                    } else {
+                    if (knownCode.isChecked)
+                        isValid = knownCode.isPermanent && knownCode.isValid && (knownCode.expiresAt ? (now < knownCode.expiresAt.getTime()) : true)
+                    else {
                         const invite = await queue.add(fetchInvite(code), { priority: PRIORITY.INVITE_CHECK })
                         const expiresAt = invite?.expiresAt ?? null
                         const isPermanent = !Boolean(expiresAt) && !Boolean(invite?.maxAge) && !Boolean(invite?.maxUses)
                         isValid = Boolean(invite)
 
-                        await invites.createCheckedCode(guildId, code, expiresAt, isPermanent, isValid)
+                        await invites.createCheckedCode(guildId, code, expiresAt, isPermanent, isValid, Boolean(knownCode))
                     }
 
                     isValid
@@ -135,7 +142,7 @@ export class CheckCommand extends SakuraCommand {
 		const resultsEmbed = this.formatResultsEmbed(totalBad, totalChannels, totalGood, totalInvites, elapsedTime, checkEmbedColor)
 		
 		await checkChannel.send({ embeds: [endEmbed, resultsEmbed] })
-        await settings.update(guildId, { inCheck: false }) 
+        await settings.update(guildId, { inCheck: false, lastInviteCheckAt: new Date }) 
         await audits.create('INVITE_CHECK_FINISH', { elapsedTime: Number(elapsedTime / BigInt(1e6)), guildId: interaction.guildId, totalBad, totalChannels, totalGood, totalInvites })
     }
 
@@ -203,4 +210,6 @@ export class CheckCommand extends SakuraCommand {
 
         return embed
     }
+
+    private readonly minimumPermissions = new Permissions(['READ_MESSAGE_HISTORY', 'VIEW_CHANNEL']).freeze()
 }

@@ -2,9 +2,13 @@ import { AuditEvent, Invite, Prisma } from '@prisma/client'
 import { container } from '@sapphire/framework'
 
 export class Invites {
-    public async createCheckedCode(guildId: bigint, code: string, expiresAt: Date, isPermanent: boolean, isValid: boolean) {
-        await container.prisma.invite.create({ data: { guildId, code, expiresAt, isPermanent, isValid, isChecked: true } })
-        await container.audits.create('CHECKED_CODE_ADD', { guildId: guildId.toString(), code, expiresAt: expiresAt?.toJSON(), isPermanent, isValid, isChecked: true })
+    public async createCheckedCode(guildId: bigint, code: string, expiresAt: Date, isPermanent: boolean, isValid: boolean, isKnown: boolean) {
+        if (isKnown)
+            await this.update(guildId, code, expiresAt, isPermanent, isValid)
+        else {
+            await container.prisma.invite.create({ data: { guildId, code, expiresAt, isPermanent, isValid, isChecked: true } })
+            await container.audits.create('CHECKED_CODE_ADD', { guildId: guildId.toString(), code, expiresAt: expiresAt?.toJSON(), isPermanent, isValid, isChecked: true })
+        }      
     }
 
     public async createUncheckedCodes(guildId: bigint, codes: string[]) {

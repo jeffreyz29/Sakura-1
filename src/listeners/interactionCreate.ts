@@ -18,7 +18,7 @@ export class SakuraListener extends Listener {
         if (!interaction.inCachedGuild())
             return
         if (!channel.permissionsFor(me).has(this.minimumPermissions)) {
-            const missingPermissions = channel.permissionsFor(me).missing(this.minimumPermissions)
+            const missingPermissions = channel.permissionsFor(me).missing(this.minimumPermissions).map(permission => `\`${ permission}\``)
             // @ts-expect-error
             const message = `I am missing the ${ new Intl.ListFormat().format(missingPermissions) } ${ missingPermissions.length === 1 ? 'permission': 'permissions' } in order to run this command.`
             client.emit(EVENTS.INTERACTION_DENIED, new UserError({ identifier: 'ClientPermissions', message }), interaction)
@@ -68,5 +68,5 @@ export class SakuraListener extends Listener {
 		}
     }
 
-    private readonly minimumPermissions = new Permissions(['READ_MESSAGE_HISTORY', 'SEND_MESSAGES', 'USE_APPLICATION_COMMANDS', 'VIEW_CHANNEL']).freeze()
+    private readonly minimumPermissions = new Permissions(['EMBED_LINKS', 'READ_MESSAGE_HISTORY', 'SEND_MESSAGES', 'USE_APPLICATION_COMMANDS', 'VIEW_CHANNEL']).freeze()
 }
