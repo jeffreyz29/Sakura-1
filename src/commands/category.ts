@@ -94,8 +94,7 @@ export class CategoryCommand extends SakuraCommand {
         const { invites } = this.container
         const guildId = BigInt(category.guildId)
         const knownCodes = await invites.read(guildId, true)
-        let categoryMessages = new Collection<string, Message>()
-        const codes: string[] = []
+        const collections: Collection<string, Message>[] = []
         
         for (const channel of category.children.values()) {
             if (!channel)
@@ -110,9 +109,10 @@ export class CategoryCommand extends SakuraCommand {
             if (!messages.size)
                 continue
 
-            categoryMessages.concat(messages)
+            collections.push(messages)
         }
 
+        const categoryMessages = new Collection<string, Message>().concat(...collections)
         const foundCodes = extractCodes(categoryMessages)
         const unknownCodes = foundCodes.filter(code => !knownCodes.includes(code))
 
