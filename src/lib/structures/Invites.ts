@@ -38,7 +38,7 @@ export class Invites {
 		const uncheckedCodes = await container.prisma.invite.findMany({
 			orderBy: { createdAt: 'asc' },
 			select: { guildId: true, code: true },
-			take: 100,
+			take: 300,
 			where: { isChecked: false }			
 		})
 
