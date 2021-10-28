@@ -97,7 +97,7 @@ export class Schedules {
 		if (!this.#tasks.length)
 			this.stopTimer()
 		if (!this.#timer)
-			this.#timer = setInterval(this.check.bind(this), 5000)
+			this.#timer = setInterval(this.check.bind(this), 60000)
 	}
 
 	private stopTimer() {
