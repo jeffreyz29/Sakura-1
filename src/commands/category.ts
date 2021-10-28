@@ -116,7 +116,7 @@ export class CategoryCommand extends SakuraCommand {
         if (!codes.length)
             return
 
-        await this.container.invites.create(guildId, codes)
+        await this.container.invites.createMany(guildId, codes)
     }
 
     private readonly minimumPermissions = new Permissions(['READ_MESSAGE_HISTORY', 'VIEW_CHANNEL']).freeze()

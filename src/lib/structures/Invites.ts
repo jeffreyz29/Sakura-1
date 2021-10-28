@@ -1,8 +1,8 @@
-import { AuditEvent, Invite, Prisma } from '@prisma/client'
+import { Invite } from '@prisma/client'
 import { container } from '@sapphire/framework'
 
 export class Invites {
-    public async create(guildId: bigint, codes: string[], fromMessage = false) {
+    public async createMany(guildId: bigint, codes: string[], fromMessage = false) {
         const inviteData = codes.map(code => ({ guildId, code }))
 
         await container.prisma.invite.createMany({ data: inviteData, skipDuplicates: true })
@@ -15,35 +15,38 @@ export class Invites {
         await container.prisma.invite.deleteMany({ where: { guildId } })
     }
 
-    public async read(guildId: bigint, codesOnly: false): Promise<Map<string, Invite>>
-    public async read(guildId: bigint, codesOnly: true): Promise<string[]>
-    public async read(guildId: bigint, codesOnly: boolean) {
-        if (codesOnly) {
-            const data = await container.prisma.invite.findMany({ select: { code: true }, where: { guildId } })
-            const codes = data.map(({ code }) => code)
-
+    public async read(option: 'checked'): Promise<{ guildId: bigint; code: string }[]>
+    public async read(option: bigint): Promise<Map<string, Invite>>
+    public async read(option: 'unchecked'): Promise<{ guildId: bigint; code: string }[]>
+    public async read(option: 'checked' | bigint | 'unchecked') {
+        if (option === 'checked') {
+            const codes = await container.prisma.invite.findMany({
+                orderBy: { updatedAt: 'asc' },
+                select: { guildId: true, code: true },
+                take: 300,
+                where: { isChecked: true, isValid: true }			
+            })
+    
             return codes
-        } else {
-            const data = await container.prisma.invite.findMany({ where: { guildId } })
+        } else if (typeof option === 'bigint') {
+            const data = await container.prisma.invite.findMany({ where: { guildId: option } })
             const invites = new Map<string, Invite>()
     
             for (const datum of data)
                 invites.set(datum.code, datum)
     
             return invites
+        } else {
+            const codes = await container.prisma.invite.findMany({
+                orderBy: { createdAt: 'asc' },
+                select: { guildId: true, code: true },
+                take: 300,
+                where: { isChecked: false }			
+            })
+    
+            return codes
         }
     }
-    
-	public async readUncheckedCodes() {
-		const uncheckedCodes = await container.prisma.invite.findMany({
-			orderBy: { createdAt: 'asc' },
-			select: { guildId: true, code: true },
-			take: 300,
-			where: { isChecked: false }			
-		})
-
-		return uncheckedCodes
-	}
 
     public async upsert(guildId: bigint, code: string, expiresAt: Date, isPermanent: boolean, isValid: boolean) {
         await container.prisma.invite.upsert({

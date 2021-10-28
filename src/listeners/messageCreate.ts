@@ -27,6 +27,6 @@ export class SakuraListener extends Listener {
         if (!foundCodes.length)
             return
 
-        await invites.create(guildId, foundCodes, true)
+        await invites.createMany(guildId, foundCodes, true)
     }
 }

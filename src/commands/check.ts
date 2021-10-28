@@ -67,7 +67,7 @@ export class CheckCommand extends SakuraCommand {
 
         const shouldCheckChannel = (channel: GuildBasedChannelTypes): channel is NewsChannel | TextChannel => isNewsOrTextChannel(channel) && !ignoreChannelIds.includes(BigInt(channel.id))
         const { me } = interaction.guild
-        const knownCodes = await invites.read(guildId, false)
+        const knownCodes = await invites.read(guildId)
 
         for (const { children, name } of sortedCategoriesToCheck.values()) {
             const counts: CategoryCounts = { channels: [], issues: 0, manual: [], name }
