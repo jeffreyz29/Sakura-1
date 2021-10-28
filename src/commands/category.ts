@@ -91,9 +91,7 @@ export class CategoryCommand extends SakuraCommand {
     }
 
     private async processCategory(category: CategoryChannel) {
-        const { invites } = this.container
         const guildId = BigInt(category.guildId)
-        const knownCodes = await invites.read(guildId, true)
         const collections: Collection<string, Message>[] = []
         
         for (const channel of category.children.values()) {
@@ -113,13 +111,12 @@ export class CategoryCommand extends SakuraCommand {
         }
 
         const categoryMessages = new Collection<string, Message>().concat(...collections)
-        const foundCodes = extractCodes(categoryMessages)
-        const unknownCodes = foundCodes.filter(code => !knownCodes.includes(code))
+        const codes = extractCodes(categoryMessages)
 
-        if (!unknownCodes.length)
+        if (!codes.length)
             return
 
-        await this.container.invites.create(guildId, unknownCodes)
+        await this.container.invites.create(guildId, codes)
     }
 
     private readonly minimumPermissions = new Permissions(['READ_MESSAGE_HISTORY', 'VIEW_CHANNEL']).freeze()
