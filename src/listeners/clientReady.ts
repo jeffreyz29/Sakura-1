@@ -13,7 +13,8 @@ export class SakuraListener extends Listener {
 		for (const guild of client.guilds.cache.values())
 			await settings.create(BigInt(guild.id))
 
-		await schedules.add('invite', '*/15 * * * *', {})
+		await schedules.add('checkedUncheckedCodes', '0,30 * * * *', {})
+		await schedules.add('updateCheckedCodes', '15,45 * * * *', {})
 		await syncCommands()
 		console.log(`${client.user.tag} is online!`)
 	}
