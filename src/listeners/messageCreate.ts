@@ -22,7 +22,7 @@ export class SakuraListener extends Listener {
         if (checkChannelId === channelId)
             return
 
-        const foundCodes = extractCodes(message)
+        const foundCodes = extractCodes(message, true)
     
         if (!foundCodes.length)
             return

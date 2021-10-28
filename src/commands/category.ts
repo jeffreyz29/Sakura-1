@@ -111,7 +111,7 @@ export class CategoryCommand extends SakuraCommand {
         }
 
         const categoryMessages = new Collection<string, Message>().concat(...collections)
-        const codes = extractCodes(categoryMessages)
+        const codes = extractCodes(categoryMessages, true)
 
         if (!codes.length)
             return

@@ -6,7 +6,7 @@ import type { Collection, Invite, Message, NewsChannel, TextChannel } from 'disc
 
 export const addCommas = (num: number) => num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,')
 
-export const extractCodes = (data: Message | Collection<string, Message>) => {
+export const extractCodes = (data: Message | Collection<string, Message>, unique: boolean) => {
 	const messages = ('size' in data)
 		? [...data.values()]
 		: [data]
@@ -17,8 +17,9 @@ export const extractCodes = (data: Message | Collection<string, Message>) => {
 		foundCodes.push(...codes)
 	}
 
-	const uniqueCodes = [...new Set(foundCodes)]
-	return uniqueCodes
+	return unique ?
+		[...new Set(foundCodes)]
+		: foundCodes
 }
 
 export const fetchInvite = (code: string) => (): Promise<Invite> => {

@@ -104,7 +104,7 @@ export class CheckCommand extends SakuraCommand {
 					continue
 				}
 
-				const foundCodes = extractCodes(messages)
+				const foundCodes = extractCodes(messages, false)
 				let bad = 0, good = 0
 
 				for (const code of foundCodes) {
