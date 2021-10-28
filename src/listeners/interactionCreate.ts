@@ -35,7 +35,6 @@ export class SakuraListener extends Listener {
         const commandsThatUseSettings = ['category', 'check', 'ignore', 'set', 'settings']
         const guildId = BigInt(interaction.guildId)
 
-
         if (!command) {
             client.emit(EVENTS.UNKNOWN_INTERACTION, interaction)
             return
@@ -45,12 +44,12 @@ export class SakuraListener extends Listener {
             return
         }
 
-        const { member, memberPermissions } = interaction
+        const { permissions, roles } = interaction.member
+        const isAdmin = permissions.has('ADMINISTRATOR')
         const additionalRoleId = settings.read(BigInt(guildId), 'additionalRoleId')
-        const isAdmin = memberPermissions.has('ADMINISTRATOR')
         const hasAdditionalRole = additionalRoleId
-            ? member.roles.cache.has(additionalRoleId.toString())
-            : true
+            ? roles.cache.has(additionalRoleId.toString())
+            : false
 
         if (!isAdmin && !hasAdditionalRole) {
             client.emit(EVENTS.INTERACTION_DENIED, new UserError({ identifier: 'UserPermissions', message: `Only administrators${ additionalRoleId ? ` or those with the <@&${ additionalRoleId.toString() }> role ` : ' ' }may run commands with ${ client.user.username }.` }), interaction)
