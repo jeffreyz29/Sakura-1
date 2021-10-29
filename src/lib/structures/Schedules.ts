@@ -38,7 +38,7 @@ export class Schedules {
 
 				const task = container.stores.get('tasks').get(t.name)
 
-				if (!task.enabled)
+				if (!task?.options.enabled)
 					continue
 
 				this.#tasks[i].running = true
@@ -97,7 +97,7 @@ export class Schedules {
 		if (!this.#tasks.length)
 			this.stopTimer()
 		if (!this.#timer)
-			this.#timer = setInterval(this.check.bind(this), 60000)
+			this.#timer = setInterval(this.check.bind(this), 30000)
 	}
 
 	private stopTimer() {
