@@ -111,7 +111,7 @@ export class CheckCommand extends SakuraCommand {
                     const knownCode = knownCodes.get(code)
                     let isValid: boolean
 
-                    if (knownCode.isChecked)
+                    if (knownCode?.isChecked)
                         isValid = knownCode.isValid && (knownCode.isPermanent || (now < (knownCode?.expiresAt.getTime() ?? 0)))
                     else {
                         const invite = await queue.add(fetchInvite(code), { priority: PRIORITY.INVITE_CHECK })
