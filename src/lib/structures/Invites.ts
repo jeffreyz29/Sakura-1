@@ -23,7 +23,7 @@ export class Invites {
             const codes = await container.prisma.invite.findMany({
                 orderBy: { updatedAt: 'asc' },
                 select: { guildId: true, code: true },
-                take: 20,
+                take: 300,
                 where: { isChecked: true, isValid: true }			
             })
     
@@ -40,7 +40,7 @@ export class Invites {
             const codes = await container.prisma.invite.findMany({
                 orderBy: { createdAt: 'asc' },
                 select: { guildId: true, code: true },
-                take: 20,
+                take: 300,
                 where: { isChecked: false }			
             })
     
