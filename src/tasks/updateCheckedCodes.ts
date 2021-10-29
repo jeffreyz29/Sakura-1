@@ -13,8 +13,6 @@ export class UpdateCheckedCodesTask extends Task {
             const isValid = Boolean(invite)
 			const isPermanent = isValid && !Boolean(expiresAt) && !Boolean(invite?.maxAge) && !Boolean(invite?.maxUses)
 
-			console.log({ guildId, code, expiresAt, isPermanent, isValid, invite })
-
             await invites.upsert(guildId, code, expiresAt, isPermanent, isValid)
         }
 		
