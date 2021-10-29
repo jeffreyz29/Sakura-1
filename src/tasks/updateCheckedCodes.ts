@@ -4,10 +4,13 @@ import { fetchInvite } from '#utils'
 
 export class UpdateCheckedCodesTask extends Task {
 	public async run() {
-		const { invites, queue } = this.container
+		const { invites, queue, settings } = this.container
 		const codes = await invites.read('checked')
 
 		for (const { guildId, code } of codes) {
+			if (!settings.read(guildId, 'inCheck'))
+				await settings.update(guildId, { inCheck: true })
+
 			const invite = await queue.add(fetchInvite(code), { priority: PRIORITY.CATEGORY })
             const expiresAt = invite?.expiresAt ?? null
             const isValid = Boolean(invite)
