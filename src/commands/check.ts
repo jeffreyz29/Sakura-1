@@ -17,16 +17,12 @@ export class CheckCommand extends SakuraCommand {
     public async interact(interaction: CommandInteraction, options: CommandInteractionOptionResolver) {
         await interaction.deferReply()
 
-        const { audits, client, invites, queue, settings } = this.container
+        const { audits, client, invites, queue, prisma, settings } = this.container
         const guildId = BigInt(interaction.guildId)
         const { categoryChannelIds, checkChannelId, checkEmbedColor, ignoreChannelIds, inCheck, lastInviteCheckAt = new Date } = settings.read(guildId)
         const now = Date.now()
         const checkCounts: CategoryCounts[] = []
-
-        if (inCheck) {
-            await client.emit(EVENTS.INTERACTION_ERROR, new Error(`${ client.user.username } is still checking categories for this guild. Please try again at a later time.`), { interaction, options })
-            return
-        }
+        
         if (now <= (lastInviteCheckAt?.getTime() ?? 0) + INVITE_CHECK_COOLDOWN) {
             const seconds = Math.floor(((lastInviteCheckAt?.getTime() ?? 0) + INVITE_CHECK_COOLDOWN) / 1000)
             await client.emit(EVENTS.INTERACTION_ERROR, new Error(`You may run an invite check again at ${ Formatters.time(seconds) } (${ Formatters.time(seconds, 'R') })`), { interaction, options })
@@ -42,6 +38,21 @@ export class CheckCommand extends SakuraCommand {
         }
         if (!categoryChannelIds.length) {
             await client.emit(EVENTS.INTERACTION_ERROR, new Error('There are no categories to check. Please add some before running an invite check.'), { interaction, options })
+            return
+        }
+        if (inCheck) {
+            await client.emit(EVENTS.INTERACTION_ERROR, new Error(`${ client.user.username } is still checking categories for this guild. Please try again at a later time.`), { interaction, options })
+            return
+        }
+
+        const { updatedAt = new Date() } = await prisma.invite.findFirst({
+            orderBy: { updatedAt: 'asc' },
+            select: { updatedAt: true },
+            where: { guildId }
+        })
+
+        if ((lastInviteCheckAt.getTime() ?? 0) > updatedAt.getTime()) {
+            await client.emit(EVENTS.INTERACTION_ERROR, new Error(`Invites have not been updated since your last invite check. Please try again at a later time.`), { interaction, options })
             return
         }
        
