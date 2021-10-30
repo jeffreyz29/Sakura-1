@@ -11,7 +11,7 @@ export class Settings {
             return
 
         const setting = await container.prisma.setting.create({ data: { guildId } })
-		await container.audits.create('GUILD_CREATE', { guildId: guildId.toString() })
+		await container.audits.create('GUILD_CREATE', { guildId: guildId.toString(), total: container.client.guilds.cache.size })
         this.#settings.set(guildId, setting) 
 	}
 
@@ -20,7 +20,7 @@ export class Settings {
             return
 
         await container.prisma.setting.delete({ where: { guildId } })
-		await container.audits.create('GUILD_DELETE', { guildId: guildId.toString() })
+		await container.audits.create('GUILD_DELETE', { guildId: guildId.toString(), total: container.client.guilds.cache.size })
         this.#settings.delete(guildId) 
 	}
 
