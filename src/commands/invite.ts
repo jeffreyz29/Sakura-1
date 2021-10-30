@@ -4,10 +4,10 @@ import { ApplyOptions } from '@sapphire/decorators'
 import { type CommandInteraction, type MessageActionRowOptions, type MessageActionRowComponentOptions, Permissions } from 'discord.js'
 
 @ApplyOptions<SakuraCommandOptions>({
-    description: 'Displays the invite link for the support server.',
+    description: 'Displays the invite link for Sakura.',
     type: 'CHAT_INPUT'
 })
-export class SupportCommand extends SakuraCommand {
+export class InviteCommand extends SakuraCommand {
     public async interact(interaction: CommandInteraction) {
 		await interaction.deferReply()
 
