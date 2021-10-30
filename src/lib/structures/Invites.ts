@@ -4,9 +4,10 @@ import { container } from '@sapphire/framework'
 export class Invites {
     public async createMany(guildId: bigint, codes: string[], fromMessage = false) {
         const inviteData = codes.map(code => ({ guildId, code }))
+        const { count } = await container.prisma.invite.createMany({ data: inviteData, skipDuplicates: true })
 
-        await container.prisma.invite.createMany({ data: inviteData, skipDuplicates: true })
-
+        if (!count)
+            return
         if (!fromMessage && !container.settings.read(guildId, 'inCheck'))
             await container.settings.update(guildId, { inCheck: true })
     }
