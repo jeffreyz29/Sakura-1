@@ -45,14 +45,11 @@ export class CheckCommand extends SakuraCommand {
             return
         }
 
-        const { updatedAt = new Date() } = await prisma.invite.findFirst({
-            orderBy: { updatedAt: 'asc' },
-            select: { updatedAt: true },
-            where: { guildId }
-        })
+        const knownCodes = await invites.read(guildId)
+        const haveAllCodesBeenUpdated = [...knownCodes.values()].every(({ updatedAt }) => updatedAt > lastInviteCheckAt)
 
-        if ((lastInviteCheckAt.getTime() ?? 0) > updatedAt.getTime()) {
-            await client.emit(EVENTS.INTERACTION_ERROR, new Error(`Invites have not been updated since your last invite check. Please try again at a later time.`), { interaction, options })
+        if (!haveAllCodesBeenUpdated) {
+            await client.emit(EVENTS.INTERACTION_ERROR, new Error(`All invites have not been updated since your last invite check. Please try again at a later time.`), { interaction, options })
             return
         }
        
@@ -78,7 +75,6 @@ export class CheckCommand extends SakuraCommand {
 
         const shouldCheckChannel = (channel: GuildBasedChannelTypes): channel is NewsChannel | TextChannel => isNewsOrTextChannel(channel) && !ignoreChannelIds.includes(BigInt(channel.id))
         const { me } = interaction.guild
-        const knownCodes = await invites.read(guildId)
 
         for (const { children, name } of sortedCategoriesToCheck.values()) {
             const counts: CategoryCounts = { channels: [], issues: 0, manual: [], name }
