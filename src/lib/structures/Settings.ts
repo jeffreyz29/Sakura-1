@@ -1,30 +1,37 @@
 import type { Setting } from '@prisma/client'
 import { container } from '@sapphire/framework'
-import { Collection } from 'discord.js'
+import { Collection, Guild } from 'discord.js'
 import { Except, RequireAtLeastOne } from 'type-fest'
 
 export class Settings {
 	#settings: Collection<bigint, Setting> = new Collection()
 
 	public async create(guildId: bigint) {
-		if (this.#settings.has(guildId)) 
-			await this.update(guildId, { active: true })
-		else {
+		const guild = this.read(guildId)
+
+		if (!guild) {
 			const setting = await container.prisma.setting.create({ data: { guildId } })
 			this.#settings.set(guildId, setting)
+			await container.audits.create('GUILD_CREATE', { guildId: guildId.toString(), total: container.client.guilds.cache.size })
 		}
-
-		await container.audits.create('GUILD_CREATE', { guildId: guildId.toString(), total: container.client.guilds.cache.size })
+		if (!guild.active) {
+			await this.update(guildId, { active: true })
+			await container.audits.create('GUILD_CREATE', { guildId: guildId.toString(), total: container.client.guilds.cache.size })
+		}
 	}
 
 	public async delete(guildId: bigint) {
-		if (!this.#settings.has(guildId)) {
+		const guild = this.read(guildId)
+
+		if (!guild) {
 			const setting = await container.prisma.setting.create({ data: { guildId, active: false } })
 			this.#settings.set(guildId, setting)
-		} else
+			await container.audits.create('GUILD_DELETE', { guildId: guildId.toString(), total: container.client.guilds.cache.size })
+		}
+		if (guild.active) {
 			await this.update(guildId, { active: false })
-
-		await container.audits.create('GUILD_DELETE', { guildId: guildId.toString(), total: container.client.guilds.cache.size })
+			await container.audits.create('GUILD_DELETE', { guildId: guildId.toString(), total: container.client.guilds.cache.size })
+		}
 	}
 
 	public async init() {
