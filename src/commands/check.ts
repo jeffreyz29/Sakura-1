@@ -46,7 +46,7 @@ export class CheckCommand extends SakuraCommand {
         }
 
         const knownCodes = await invites.read(guildId)
-        const haveAllCodesBeenUpdated = [...knownCodes.values()].every(({ updatedAt }) => updatedAt > lastInviteCheckAt)
+        const haveAllCodesBeenUpdated = [...knownCodes.values()].every(({ isValid, updatedAt }) => isValid ? (updatedAt > lastInviteCheckAt) : true)
 
         if (!haveAllCodesBeenUpdated) {
             await client.emit(EVENTS.INTERACTION_ERROR, new Error(`All invites have not been updated since your last invite check. Please try again at a later time.`), { interaction, options })
