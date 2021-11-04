@@ -52,6 +52,7 @@ model Setting {
     inCheck            Boolean   @default(false)
     createdAt          DateTime  @default(now())
     updatedAt          DateTime  @updatedAt
+    active             Boolean   @default(true)
 
     @@unique([guildId])
     @@map("setting")

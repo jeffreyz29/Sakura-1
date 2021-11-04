@@ -7,21 +7,24 @@ export class Settings {
 	#settings: Collection<bigint, Setting> = new Collection()
 
 	public async create(guildId: bigint) {
-        if (this.#settings.has(guildId))
-            return
+		if (this.#settings.has(guildId)) 
+			await this.update(guildId, { active: true })
+		else {
+			const setting = await container.prisma.setting.create({ data: { guildId } })
+			this.#settings.set(guildId, setting)
+		}
 
-        const setting = await container.prisma.setting.create({ data: { guildId } })
 		await container.audits.create('GUILD_CREATE', { guildId: guildId.toString(), total: container.client.guilds.cache.size })
-        this.#settings.set(guildId, setting) 
 	}
 
 	public async delete(guildId: bigint) {
-        if (!this.#settings.has(guildId))
-            return
+		if (!this.#settings.has(guildId)) {
+			const setting = await container.prisma.setting.create({ data: { guildId, active: false } })
+			this.#settings.set(guildId, setting)
+		} else
+			await this.update(guildId, { active: false })
 
-        await container.prisma.setting.delete({ where: { guildId } })
 		await container.audits.create('GUILD_DELETE', { guildId: guildId.toString(), total: container.client.guilds.cache.size })
-        this.#settings.delete(guildId) 
 	}
 
 	public async init() {
