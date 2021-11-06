@@ -14,7 +14,7 @@ import prettyMilliseconds from 'pretty-ms'
     type: 'CHAT_INPUT'
 })
 export class CheckCommand extends SakuraCommand {
-    public async interact(interaction: CommandInteraction, options: CommandInteractionOptionResolver) {
+    public async interact(interaction: CommandInteraction<'cached'>, options: Omit<CommandInteractionOptionResolver<'cached'>, 'getMessage' | 'getFocused'>) {
         await interaction.deferReply()
 
         const { audits, client, invites, queue, prisma, settings } = this.container
@@ -25,23 +25,23 @@ export class CheckCommand extends SakuraCommand {
         
         if (now <= (lastInviteCheckAt?.getTime() ?? 0) + INVITE_CHECK_COOLDOWN) {
             const seconds = Math.floor(((lastInviteCheckAt?.getTime() ?? 0) + INVITE_CHECK_COOLDOWN) / 1000)
-            await client.emit(EVENTS.INTERACTION_ERROR, new Error(`You may run an invite check again at ${ Formatters.time(seconds) } (${ Formatters.time(seconds, 'R') })`), { interaction, options })
+            client.emit(EVENTS.INTERACTION_ERROR, new Error(`You may run an invite check again at ${ Formatters.time(seconds) } (${ Formatters.time(seconds, 'R') })`), interaction)
             return   
         }
         if (!checkChannelId) {
-            await client.emit(EVENTS.INTERACTION_ERROR, new Error('No check channel has been set for this guild. Please set one before running an invite check.'), { interaction, options })
+            client.emit(EVENTS.INTERACTION_ERROR, new Error('No check channel has been set for this guild. Please set one before running an invite check.'), interaction)
             return
         }
         if (checkChannelId !== BigInt(interaction.channelId)) {
-            await client.emit(EVENTS.INTERACTION_ERROR, new Error(`This command can only be run in <#${ checkChannelId }>.`), { interaction, options })
+            client.emit(EVENTS.INTERACTION_ERROR, new Error(`This command can only be run in <#${ checkChannelId }>.`), interaction)
             return
         }
         if (!categoryChannelIds.length) {
-            await client.emit(EVENTS.INTERACTION_ERROR, new Error('There are no categories to check. Please add some before running an invite check.'), { interaction, options })
+            client.emit(EVENTS.INTERACTION_ERROR, new Error('There are no categories to check. Please add some before running an invite check.'), interaction)
             return
         }
         if (inCheck) {
-            await client.emit(EVENTS.INTERACTION_ERROR, new Error(`${ client.user.username } is still checking categories for this guild. Please try again at a later time.`), { interaction, options })
+            client.emit(EVENTS.INTERACTION_ERROR, new Error(`${ client.user.username } is still checking categories for this guild. Please try again at a later time.`), interaction)
             return
         }
 
@@ -49,14 +49,14 @@ export class CheckCommand extends SakuraCommand {
         const haveAllCodesBeenUpdated = [...knownCodes.values()].every(({ isValid, updatedAt }) => isValid ? (updatedAt > lastInviteCheckAt) : true)
 
         if (!haveAllCodesBeenUpdated) {
-            await client.emit(EVENTS.INTERACTION_ERROR, new Error(`All invites have not been updated since your last invite check. Please try again at a later time.`), { interaction, options })
+            client.emit(EVENTS.INTERACTION_ERROR, new Error(`All invites have not been updated since your last invite check. Please try again at a later time.`), interaction)
             return
         }
        
         const { channel: checkChannel, guild } = interaction
 
         if (!isNewsOrTextChannel(checkChannel)) {
-            await client.emit(EVENTS.INTERACTION_ERROR, new Error(`${ checkChannel } is neither an announcement nor a text channel.`), { interaction, options })
+            client.emit(EVENTS.INTERACTION_ERROR, new Error(`${ checkChannel } is neither an announcement nor a text channel.`), interaction)
             return
         }
 

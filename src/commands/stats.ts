@@ -10,7 +10,7 @@ import prettyMilliseconds from 'pretty-ms'
     type: 'CHAT_INPUT'
 })
 export class PingCommand extends SakuraCommand {
-    public async interact(interaction: CommandInteraction) {
+    public async interact(interaction: CommandInteraction<'cached'>) {
 		await interaction.deferReply()
 
 		const { client } = this.container

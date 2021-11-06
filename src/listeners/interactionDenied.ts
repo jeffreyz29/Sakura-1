@@ -5,7 +5,7 @@ import type { CommandInteraction, MessageEmbed } from 'discord.js'
 
 @ApplyOptions<ListenerOptions>({ event: EVENTS.INTERACTION_DENIED })
 export class SakuraListener extends Listener {
-    public async run({ message }: UserError, interaction: CommandInteraction) {
+    public async run({ message }: UserError, interaction: CommandInteraction<'cached'>) {
         const embed: Partial<MessageEmbed> = { color: 0xF8F8FF, description: message }
 
         if (interaction.deferred)

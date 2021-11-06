@@ -39,7 +39,7 @@ import type { CommandInteraction, CommandInteractionOptionResolver, MessageEmbed
     type: 'CHAT_INPUT'
 })
 export class IgnoreCommand extends SakuraCommand {
-    public async interact(interaction: CommandInteraction, options: CommandInteractionOptionResolver) {
+    public async interact(interaction: CommandInteraction<'cached'>, options: Omit<CommandInteractionOptionResolver<'cached'>, 'getMessage' | 'getFocused'>) {
 		await interaction.deferReply()
         
         const { client, settings } = this.container
@@ -47,7 +47,7 @@ export class IgnoreCommand extends SakuraCommand {
         const channel = options.getChannel('channel')
 
         if (!channel) {
-            await client.emit(EVENTS.INTERACTION_ERROR, new Error('No channel found.'), { interaction, options })
+            client.emit(EVENTS.INTERACTION_ERROR, new Error('No channel found.'), interaction)
             return
         }
 
@@ -57,11 +57,11 @@ export class IgnoreCommand extends SakuraCommand {
         const inList = list.includes(channelId)
 
         if ((subcommand === 'add') && inList) {
-            await client.emit(EVENTS.INTERACTION_ERROR, new Error('This channel is already ignored.'), { interaction, options })
+            client.emit(EVENTS.INTERACTION_ERROR, new Error('This channel is already ignored.'), interaction)
             return
         }
         if ((subcommand === 'remove') && !inList) {
-            await client.emit(EVENTS.INTERACTION_ERROR, new Error('This channel is not in the "ignored channels" list.'), { interaction, options })
+            client.emit(EVENTS.INTERACTION_ERROR, new Error('This channel is not in the "ignored channels" list.'), interaction)
             return
         }
 

@@ -40,7 +40,7 @@ import { type CategoryChannel, type CommandInteraction, type CommandInteractionO
     type: 'CHAT_INPUT'
 })
 export class CategoryCommand extends SakuraCommand {
-    public async interact(interaction: CommandInteraction, options: CommandInteractionOptionResolver) {
+    public async interact(interaction: CommandInteraction<'cached'>, options: Omit<CommandInteractionOptionResolver<'cached'>, 'getMessage' | 'getFocused'>) {
 		await interaction.deferReply()
         
         const { client, settings } = this.container
@@ -48,7 +48,7 @@ export class CategoryCommand extends SakuraCommand {
         const category = options.getChannel('category') as CategoryChannel
 
         if (!category) {
-            await client.emit(EVENTS.INTERACTION_ERROR, new Error('No category found.'), { interaction, options })
+            client.emit(EVENTS.INTERACTION_ERROR, new Error('No category found.'), interaction)
             return
         }
 
@@ -58,11 +58,11 @@ export class CategoryCommand extends SakuraCommand {
         const inList = list.includes(channelId)
 
         if ((subcommand === 'add') && inList) {
-            await client.emit(EVENTS.INTERACTION_ERROR, new Error('This category has already been added.'), { interaction, options })
+            client.emit(EVENTS.INTERACTION_ERROR, new Error('This category has already been added.'), interaction)
             return
         }
         if ((subcommand === 'remove') && !inList) {
-            await client.emit(EVENTS.INTERACTION_ERROR, new Error('This category is not in the list.'), { interaction, options })
+            client.emit(EVENTS.INTERACTION_ERROR, new Error('This category is not in the list.'), interaction)
             return
         }
 
@@ -75,7 +75,7 @@ export class CategoryCommand extends SakuraCommand {
             if (issues.length) {
                 // @ts-expect-error
                 const message = `I am unable to read ${ new Intl.ListFormat().format(issues.map(issue => `<#${ issue.id }>`)) }. `
-                await client.emit(EVENTS.INTERACTION_ERROR, new Error(message), { interaction, options })
+                client.emit(EVENTS.INTERACTION_ERROR, new Error(message), interaction)
                 return
             } else 
                 await this.processCategory(category)

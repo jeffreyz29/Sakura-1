@@ -8,7 +8,7 @@ import { type CommandInteraction, type MessageActionRowOptions, type MessageActi
     type: 'CHAT_INPUT'
 })
 export class InviteCommand extends SakuraCommand {
-    public async interact(interaction: CommandInteraction) {
+    public async interact(interaction: CommandInteraction<'cached'>) {
 		await interaction.deferReply()
 
 		const url = this.container.client.generateInvite({

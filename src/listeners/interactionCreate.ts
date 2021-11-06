@@ -17,17 +17,10 @@ export class SakuraListener extends Listener {
             return false
         if (!interaction.inCachedGuild())
             return
-        if (!channel.permissionsFor(me).has(this.minimumPermissions)) {
-            const missingPermissions = channel.permissionsFor(me).missing(this.minimumPermissions).map(permission => `\`${ permission}\``)
-            // @ts-expect-error
-            const message = `I am missing the ${ new Intl.ListFormat().format(missingPermissions) } ${ missingPermissions.length === 1 ? 'permission': 'permissions' } in order to run this command.`
-            client.emit(EVENTS.INTERACTION_DENIED, new UserError({ identifier: 'ClientPermissions', message }), interaction)
-            return
-        }
+        if (!interaction.isCommand())
+			return
         if (interaction.user.bot)
             return
-		if (!interaction.isCommand())
-			return
 
         const { settings, stores } = this.container
         const { commandName } = interaction
@@ -40,7 +33,14 @@ export class SakuraListener extends Listener {
             return
         }
         if (commandsThatUseSettings.includes(commandName) && !settings.read(guildId)) {
-            client.emit(EVENTS.INTERACTION_DENIED, new Error(`Please kick and reinvite ${ client.user.username }.`), interaction)
+            client.emit(EVENTS.INTERACTION_ERROR, new Error(`Please kick and reinvite ${ client.user.username }.`), interaction)
+            return
+        }
+        if (!channel.permissionsFor(me).has(this.minimumPermissions)) {
+            const missingPermissions = channel.permissionsFor(me).missing(this.minimumPermissions).map(permission => `\`${ permission}\``)
+            // @ts-expect-error
+            const message = `I am missing the ${ new Intl.ListFormat().format(missingPermissions) } ${ missingPermissions.length === 1 ? 'permission': 'permissions' } in order to run this command.`
+            client.emit(EVENTS.INTERACTION_DENIED, new UserError({ identifier: 'ClientPermissions', message }), interaction)
             return
         }
 
@@ -57,7 +57,7 @@ export class SakuraListener extends Listener {
         }
 
 		try {
-			client.emit(EVENTS.INTERACTION_RUN, interaction)		
+			client.emit(EVENTS.INTERACTION_RUN, interaction, interaction.options)		
             const result = await command.interact(interaction, interaction.options)
             client.emit(EVENTS.INTERACTION_SUCCESS, interaction, result)
 		} catch (error) {

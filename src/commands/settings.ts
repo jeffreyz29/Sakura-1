@@ -8,7 +8,7 @@ import { CommandInteraction, Guild, MessageEmbed } from 'discord.js'
     type: 'CHAT_INPUT'    
 })
 export class SettingsCommand extends SakuraCommand {
-    public async interact(interaction: CommandInteraction) {
+    public async interact(interaction: CommandInteraction<'cached'>) {
         await interaction.deferReply()
         
         const { guild } = interaction

@@ -9,7 +9,7 @@ import type { CommandInteraction, MessageActionRowOptions, MessageActionRowCompo
     type: 'CHAT_INPUT'
 })
 export class SupportCommand extends SakuraCommand {
-    public async interact(interaction: CommandInteraction) {
+    public async interact(interaction: CommandInteraction<'cached'>) {
 		await interaction.deferReply()
 
 		const inviteButton: MessageActionRowComponentOptions = { label: 'Support Server', style: 'LINK', type: 'BUTTON', url: `https://discord.gg/${ SUPPORT_SERVER_CODE }` }

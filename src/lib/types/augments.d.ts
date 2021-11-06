@@ -1,4 +1,4 @@
-import { Events } from '#constants'
+import { EVENTS } from '#constants'
 import type { Audits, Invites, Schedules, Settings, TaskStore } from '#structures'
 import Prisma from '@prisma/client'
 import { Awaitable, UserError } from '@sapphire/framework'
@@ -7,12 +7,12 @@ import type PQueue from 'p-queue'
 
 declare module 'discord.js' {
 	interface ClientEvents {
-		[Events.INTERACTION_DENIED]: [error: UserError, interaction: CommandInteraction]
-		[Events.INTERACTION_ERROR]: [error: Error, interaction: CommandInteraction]
-		[Events.INTERACTION_FINISH]: [interaction: CommandInteraction]
-		[Events.INTERACTION_RUN]: [interaction: CommandInteraction, options: CommandInteractionOptionResolver]
-		[Events.INTERACTION_SUCCESS]: [interaction: CommandInteraction, result: Awaitable<unknown>]
-		[Events.UNKNOWN_INTERACTION]: [interaction: CommandInteraction]
+		[EVENTS.INTERACTION_DENIED]: [error: UserError, interaction: CommandInteraction<'cached'>]
+		[EVENTS.INTERACTION_ERROR]: [error: Error, interaction: CommandInteraction<'cached'>]
+		[EVENTS.INTERACTION_FINISH]: [interaction: CommandInteraction<'cached'>]
+		[EVENTS.INTERACTION_RUN]: [interaction: CommandInteraction<'cached'>, options: Omit<CommandInteractionOptionResolver<'cached'>, 'getMessage' | 'getFocused'>]
+		[EVENTS.INTERACTION_SUCCESS]: [interaction: CommandInteraction<'cached'>, result: Awaitable<unknown>]
+		[EVENTS.UNKNOWN_INTERACTION]: [interaction: CommandInteraction<'cached'>]
 	}
 }
 
@@ -21,7 +21,7 @@ declare module '@sapphire/framework' {
 		defaultPermission?: boolean
 		parameters?: ApplicationCommandOptionData[]
 		type: ApplicationCommandTypes
-		interact(interaction: CommandInteraction, options: CommandInteractionOptionResolver): Awaitable<unknown>
+		interact(interaction: CommandInteraction<'cached'>, options: Omit<CommandInteractionOptionResolver<'cached'>, 'getMessage' | 'getFocused'>): Awaitable<unknown>
 		getCommandData(): ApplicationCommandData
 	}
 }

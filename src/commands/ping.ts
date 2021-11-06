@@ -9,7 +9,7 @@ import type { CommandInteraction, MessageEmbed } from 'discord.js'
     type: 'CHAT_INPUT'
 })
 export class PingCommand extends SakuraCommand {
-    public async interact(interaction: CommandInteraction) {
+    public async interact(interaction: CommandInteraction<'cached'>) {
         const reply = await interaction.deferReply({ fetchReply: true })
         const ping = this.getMillisecondsFromSnowflake(reply.id) - interaction.createdTimestamp
         const embed: Partial<MessageEmbed> = {

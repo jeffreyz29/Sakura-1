@@ -50,7 +50,7 @@ import { type ColorResolvable, type CommandInteraction, type CommandInteractionO
     type: 'CHAT_INPUT'
 })
 export class SetCommand extends SakuraCommand {
-    public async interact(interaction: CommandInteraction, options: CommandInteractionOptionResolver) {
+    public async interact(interaction: CommandInteraction<'cached'>, options: Omit<CommandInteractionOptionResolver<'cached'>, 'getMessage' | 'getFocused'>) {
 		await interaction.deferReply()
         
         const { settings } = this.container

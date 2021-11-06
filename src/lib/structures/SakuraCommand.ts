@@ -18,7 +18,7 @@ export abstract class SakuraCommand extends Command {
         return null
     }
 
-    public abstract interact(interaction: CommandInteraction, options: CommandInteractionOptionResolver): Awaitable<unknown>
+    public abstract interact(interaction: CommandInteraction<'cached'>, options: Omit<CommandInteractionOptionResolver<'cached'>, 'getMessage' | 'getFocused'>): Awaitable<unknown>
 
     public getCommandData(): ApplicationCommandData {
 		return {
