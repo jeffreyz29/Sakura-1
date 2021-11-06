@@ -180,7 +180,7 @@ export class CheckCommand extends SakuraCommand {
 		}
 
         embed.description = (channels.length)
-            ? channels.map(({ bad, channelId, good }) => `${ bad ? '🔴' : '🟢' } <#${ channelId }> - **${ bad + good }** total (**${ bad }** bad, **${ good }** good)`).join('\n')
+            ? channels.map(({ bad, channelId, good }) => `${ bad ? '🔴' : '🟢' } <#${ channelId }> - **${ bad + good }** total ${ bad ? `(**${ bad }** bad)` : '' }`).join('\n')
             : 'No channels to check in this category.'
 
 		if (issues) {
