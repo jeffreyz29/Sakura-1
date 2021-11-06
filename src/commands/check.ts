@@ -14,10 +14,10 @@ import prettyMilliseconds from 'pretty-ms'
     type: 'CHAT_INPUT'
 })
 export class CheckCommand extends SakuraCommand {
-    public async interact(interaction: CommandInteraction<'cached'>, options: Omit<CommandInteractionOptionResolver<'cached'>, 'getMessage' | 'getFocused'>) {
+    public async interact(interaction: CommandInteraction<'cached'>) {
         await interaction.deferReply()
 
-        const { audits, client, invites, queue, prisma, settings } = this.container
+        const { audits, client, invites, queue, settings } = this.container
         const guildId = BigInt(interaction.guildId)
         const { categoryChannelIds, checkChannelId, checkEmbedColor, ignoreChannelIds, inCheck, lastInviteCheckAt = new Date } = settings.read(guildId)
         const now = Date.now()
