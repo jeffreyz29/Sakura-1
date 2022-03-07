@@ -1,7 +1,8 @@
-import { TOKEN } from '#config'
-import { Audits, Invites, Schedules, Settings, TaskStore } from '#structures'
+import { REDIS_DB, REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, TOKEN } from '#config'
+import { Audits, Invites, Settings } from '#structures'
 import Prisma from '@prisma/client'
 import { container, SapphireClient } from '@sapphire/framework'
+import { ScheduledTaskRedisStrategy } from '@sapphire/plugin-scheduled-tasks/register-redis';
 import { Intents, Options } from 'discord.js'
 import PQueue from 'p-queue'
 
@@ -30,7 +31,19 @@ export class SakuraClient extends SapphireClient {
                 ThreadManager: 0,
                 ThreadMemberManager: 0,
                 VoiceStateManager: 0
-            })
+            }),
+			tasks: {
+				strategy: new ScheduledTaskRedisStrategy({
+					bull: {
+						redis: {
+							db: REDIS_DB,
+							host: REDIS_HOST,
+							password: REDIS_PASSWORD,
+							port: REDIS_PORT
+						}
+					}
+				})
+			}
 		})	
 	}
 
@@ -39,9 +52,7 @@ export class SakuraClient extends SapphireClient {
 		container.invites = new Invites()
 		container.prisma = new Prisma.PrismaClient()
 		container.queue = new PQueue({ autoStart: true, concurrency: 1, interval: 1250, intervalCap: 1 })
-		container.schedules = new Schedules()
 		container.settings = new Settings()
-		container.stores.register(new TaskStore())
     }
 
 	public async start() {

@@ -1,5 +1,5 @@
 import { INVITE_CHECK_COOLDOWN } from '#config'
-import { EVENTS, PRIORITY } from '#constants'
+import { EVENTS } from '#constants'
 import { SakuraCommand } from '#structures'
 import { CategoryCounts, type SakuraCommandOptions } from '#types'
 import { extractCodes, fetchInvite, isNewsOrTextChannel } from '#utils'
@@ -121,7 +121,7 @@ export class CheckCommand extends SakuraCommand {
                     if (knownCode?.isChecked)
                         isValid = knownCode.isValid && (knownCode.isPermanent || (now < (knownCode?.expiresAt.getTime() ?? 0)))
                     else {
-                        const invite = await queue.add(fetchInvite(code), { priority: PRIORITY.INVITE_CHECK })
+                        const invite = await queue.add(fetchInvite(code), { priority: 1 })
                         const expiresAt = invite?.expiresAt ?? null
                         const isPermanent = !Boolean(expiresAt) && !Boolean(invite?.maxAge) && !Boolean(invite?.maxUses)
                         isValid = Boolean(invite)

@@ -1,21 +1,20 @@
-import { PRIORITY, TASK_RESULT } from '#constants'
-import { Task } from '#structures'
+import { ScheduledTask, ScheduledTaskOptions } from '@sapphire/plugin-scheduled-tasks'
 import { fetchInvite } from '#utils'
+import { ApplyOptions } from '@sapphire/decorators'
 
-export class UpdateCheckedCodesTask extends Task {
+@ApplyOptions<ScheduledTaskOptions>({ cron: '10-59/20 * * * *' })
+export class UpdateCheckedCodesTask extends ScheduledTask {
 	public async run() {
 		const { invites, queue } = this.container
 		const codes = await invites.read('checked')
 
 		for (const { guildId, code } of codes) {
-			const invite = await queue.add(fetchInvite(code), { priority: PRIORITY.CATEGORY })
+			const invite = await queue.add(fetchInvite(code), { priority: 0 })
             const expiresAt = invite?.expiresAt ?? null
             const isValid = Boolean(invite)
 			const isPermanent = isValid && !Boolean(expiresAt) && !Boolean(invite?.maxAge) && !Boolean(invite?.maxUses)
 
             await invites.upsert(guildId, code, expiresAt, isPermanent, isValid)
         }
-		
-		return TASK_RESULT.REPEAT
 	}
 }

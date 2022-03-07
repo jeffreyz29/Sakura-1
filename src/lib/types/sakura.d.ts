@@ -18,12 +18,3 @@ export type SakuraCommandOptions = Pick<CommandOptions, 'description' | 'enabled
     parameters?: ApplicationCommandOption[]
     type: ApplicationCommandType
 }
-
-export interface ScheduledTask {
-    cron: Cron
-    name: string
-    data: Record<string, unknown>
-    paused: boolean
-    running: boolean
-    time: Date
-}
