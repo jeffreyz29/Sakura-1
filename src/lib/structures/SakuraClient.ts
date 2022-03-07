@@ -51,7 +51,10 @@ export class SakuraClient extends SapphireClient {
 		container.audits = new Audits()
 		container.invites = new Invites()
 		container.prisma = new Prisma.PrismaClient()
-		container.queue = new PQueue({ autoStart: true, concurrency: 1, interval: 1250, intervalCap: 1 })
+		container.queue = new PQueue({
+			concurrency: 4,
+			interval: 2000,
+		})
 		container.settings = new Settings()
     }
 

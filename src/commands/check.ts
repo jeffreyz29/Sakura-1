@@ -45,7 +45,7 @@ export class CheckCommand extends SakuraCommand {
             return
         }
 
-        const knownCodes = await invites.read(guildId)
+        const knownCodes = await invites.readGuildCodes(guildId)
         const haveAllCodesBeenUpdated = [...knownCodes.values()].every(({ isValid, updatedAt }) => isValid ? (updatedAt > lastInviteCheckAt) : true)
 
         if (!haveAllCodesBeenUpdated) {
