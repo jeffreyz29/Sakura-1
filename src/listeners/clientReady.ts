@@ -5,15 +5,8 @@ import { Constants } from 'discord.js'
 
 @ApplyOptions<ListenerOptions>({ event: Constants.Events.CLIENT_READY, once: true })
 export class SakuraListener extends Listener {
-	public async run() {
-		const { client, settings } = this.container
-
-		await settings.init()
-
-		for (const guild of client.guilds.cache.values())
-			await settings.create(BigInt(guild.id))
-
+	public async run() {	
 		await syncCommands()
-		console.log(`${client.user.tag} is online!`)
+		console.log(`${ this.container.client.user.tag } is online!`)
 	}
 }

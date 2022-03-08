@@ -9,17 +9,24 @@ export class SakuraListener extends Listener {
         if (!this.isCategoryOrNewsOrText(channel))
             return
 
-        const { settings } = this.container
+        const { database } = this.container
         const guildId = BigInt(channel.guildId)
-        const { categoryChannelIds, checkChannelId, ignoreChannelIds } = settings.read(guildId)
         const channelId = BigInt(channel.id)
+        const setting = database.readSetting(guildId)
+
+        if (!setting)
+            return
+
+        let { categoryChannelIds, checkChannelId, ignoreChannelIds } = setting        
 
 		if (categoryChannelIds.includes(channelId))
-			await settings.update(guildId, { categoryChannelIds: categoryChannelIds.filter(id => id !== channelId) })
+            categoryChannelIds = categoryChannelIds.filter(id => id !== channelId)
 		if (checkChannelId === channelId)
-			await settings.update(guildId, { checkChannelId: null })
+            checkChannelId = null
 		if (ignoreChannelIds.includes(channelId))
-			await settings.update(guildId, { ignoreChannelIds: ignoreChannelIds.filter(id => id !== channelId) })
+            ignoreChannelIds = ignoreChannelIds.filter(id => id !== channelId)
+
+        await database.updateSetting(guildId, { categoryChannelIds, checkChannelId, ignoreChannelIds })
 	}
 
     private isCategoryOrNewsOrText(channel: ChannelTypes): channel is CategoryChannel | NewsChannel | TextChannel {

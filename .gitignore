@@ -10,7 +10,7 @@ node_modules
 # Random
 .vscode
 assets
-prisma/migrations
+prisma/migrations/migration_lock.toml
 
 # Yarn
 .yarn/cache

@@ -1,5 +1,5 @@
 import { REDIS_DB, REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, TOKEN } from '#config'
-import { Audits, Invites, Settings } from '#structures'
+import { Database } from '#structures'
 import Prisma from '@prisma/client'
 import { container, SapphireClient } from '@sapphire/framework'
 import { ScheduledTaskRedisStrategy } from '@sapphire/plugin-scheduled-tasks/register-redis';
@@ -48,14 +48,15 @@ export class SakuraClient extends SapphireClient {
 	}
 
     public async setup() {
-		container.audits = new Audits()
-		container.invites = new Invites()
+		container.database = new Database();
+
+		await container.database.init();
+
 		container.prisma = new Prisma.PrismaClient()
 		container.queue = new PQueue({
 			concurrency: 4,
 			interval: 2000,
 		})
-		container.settings = new Settings()
     }
 
 	public async start() {

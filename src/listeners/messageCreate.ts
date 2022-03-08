@@ -9,17 +9,13 @@ export class SakuraListener extends Listener {
         if (!isNewsOrTextChannel(message.channel))
             return
 
-        const { invites, settings } = this.container
+        const { database } = this.container
         const guildId = BigInt(message.guildId)
-        const { categoryChannelIds, checkChannelId, ignoreChannelIds } = settings.read(guildId)
+        const { categoryChannelIds, checkChannelId, ignoreChannelIds } = database.readSetting(guildId)
         const categoryId = BigInt(message.channel?.parentId ?? 0)
         const channelId = BigInt(message.channelId)
 
-        if (!categoryChannelIds.includes(categoryId))
-            return
-        if (ignoreChannelIds.includes(channelId))
-            return
-        if (checkChannelId === channelId)
+        if (!categoryChannelIds.includes(categoryId) || ignoreChannelIds.includes(channelId) || (checkChannelId === channelId))
             return
 
         const foundCodes = extractCodes(message, true)
@@ -27,6 +23,6 @@ export class SakuraListener extends Listener {
         if (!foundCodes.length)
             return
 
-        await invites.createMany(guildId, foundCodes, true)
+        await database.createInvites(guildId, foundCodes)
     }
 }
