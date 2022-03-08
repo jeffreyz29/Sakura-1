@@ -1,18 +1,25 @@
+import { ENVIRONMENT } from '#config'
 import { SakuraCommand } from '#structures'
-import type { SakuraCommandOptions } from '#types'
-import { ApplyOptions } from '@sapphire/decorators'
+import { ApplicationCommandRegistry, RegisterBehavior } from '@sapphire/framework'
 import { CommandInteraction, Guild, MessageEmbed } from 'discord.js'
 
-@ApplyOptions<SakuraCommandOptions>({
-    description: 'Displays a guild\'s settings.',
-    type: 'CHAT_INPUT'    
-})
 export class SettingsCommand extends SakuraCommand {
-    public async interact(interaction: CommandInteraction<'cached'>) {
+	// public override registerApplicationCommands(registry: ApplicationCommandRegistry) {
+	// 	registry.registerChatInputCommand({
+	// 		description: 'Displays a guild\'s settings.',
+	// 		name: this.name
+	// 	}, {
+    //         behaviorWhenNotIdentical: RegisterBehavior.Overwrite,
+	// 		guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : [],
+	// 		idHints: ['950620459492335706']
+	// 	})
+	// }
+
+    public async chatInputRun(interaction: CommandInteraction<'cached'>) {
         await interaction.deferReply()
         
         const { guild } = interaction
-        const { additionalRoleId, categoryChannelIds, checkChannelId, checkEmbedColor, ignoreChannelIds } = this.container.settings.read(BigInt(interaction.guildId))
+        const { categoryChannelIds, checkChannelId, checkEmbedColor, ignoreChannelIds } = this.container.database.readSetting(BigInt(interaction.guildId))
         const embed: Partial<MessageEmbed> = {
             author: {
                 iconURL: guild.iconURL({ dynamic: true, size: 1024 }),
@@ -20,9 +27,8 @@ export class SettingsCommand extends SakuraCommand {
             },
             color: 0xF8F8FF,
             fields: [
-                { inline: false, name: 'Check channel', value: `${ guild.channels.cache.get(checkChannelId?.toString()) ?? 'No channel set.' }` },
-                { inline: false, name: 'Additional role', value: `${ guild.roles.cache.get(additionalRoleId?.toString()) ?? 'No role set.' }` },
                 { inline: false, name: 'Categories', value: this.formatChannelList(guild, categoryChannelIds) ?? 'No categories added.' },
+                { inline: false, name: 'Check channel', value: `${ guild.channels.cache.get(checkChannelId?.toString()) ?? 'No channel set.' }` },
                 { inline: false, name: 'Ignored channels', value: this.formatChannelList(guild, ignoreChannelIds) ?? 'No categories added.' },
                 { inline: false, name: 'Check embed color', value: `#${ checkEmbedColor.toString(16).toUpperCase().padStart(6, '0') }` }
             ]           

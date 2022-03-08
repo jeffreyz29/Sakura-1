@@ -49,14 +49,13 @@ export class SakuraClient extends SapphireClient {
 
     public async setup() {
 		container.database = new Database();
-
-		await container.database.init();
-
-		container.prisma = new Prisma.PrismaClient()
+		container.prisma = new Prisma.PrismaClient()	
 		container.queue = new PQueue({
 			concurrency: 4,
 			interval: 2000,
 		})
+
+		await container.database.init();
     }
 
 	public async start() {

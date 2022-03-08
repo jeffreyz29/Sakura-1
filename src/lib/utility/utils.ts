@@ -1,4 +1,3 @@
-import { ENVIRONMENT, GUILD_ID } from '#config'
 import { DiscordInviteRegex } from '#constants'
 import { ChannelTypes } from '@sapphire/discord.js-utilities'
 import { container } from '@sapphire/framework'
@@ -30,27 +29,4 @@ export const fetchInvite = (code: string) => (): Promise<Invite> => {
 
 export const isNewsOrTextChannel = (channel: ChannelTypes): channel is NewsChannel | TextChannel => {
 	return ['GUILD_NEWS', 'GUILD_TEXT'].includes(channel.type)
-}
-
-export const syncCommands = async () => {
-	const { client, stores } = container
-	const isDev = (ENVIRONMENT === 'development')
-	const commands = [...stores.get('commands').values()].map(interaction => interaction.getCommandData())
-	
-	if (isDev) {
-		try {
-			const guild = await client.guilds.fetch(GUILD_ID.toString())
-			await guild.commands.set(commands)
-			console.log(`Set ${ commands.length } command(s) to guild "${ guild.name }"!`)
-		} catch (error) {
-			console.log(`This bot is not in the guild with ID "${ GUILD_ID }"`)
-		}
-	} else {
-		for (const guild of client.guilds.cache.values())
-			await guild.commands.set([])
-			
-		await client.application.fetch()
-		await client.application.commands.set(commands)
-		console.log(`Set ${ commands.length } command(s) globally!`)
-	}
 }

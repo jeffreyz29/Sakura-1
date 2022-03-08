@@ -1,15 +1,22 @@
+import { ENVIRONMENT } from '#config'
 import { SakuraCommand } from '#structures'
-import type { SakuraCommandOptions } from '#types'
 import { addCommas } from '#utils'
-import { ApplyOptions } from '@sapphire/decorators'
+import { ApplicationCommandRegistry, RegisterBehavior } from '@sapphire/framework'
 import type { CommandInteraction, MessageEmbed } from 'discord.js'
 
-@ApplyOptions<SakuraCommandOptions>({
-    description: 'Checks Discord API latency.',
-    type: 'CHAT_INPUT'
-})
 export class PingCommand extends SakuraCommand {
-    public async interact(interaction: CommandInteraction<'cached'>) {
+	// public override registerApplicationCommands(registry: ApplicationCommandRegistry) {
+	// 	registry.registerChatInputCommand({
+	// 		description: 'Checks Discord API latency.',
+	// 		name: this.name
+	// 	}, {
+    //         behaviorWhenNotIdentical: RegisterBehavior.Overwrite,
+    //         guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : [],
+	// 		idHints: ['950620375484604416']
+	// 	})
+	// }
+
+    public async chatInputRun(interaction: CommandInteraction) {
         const reply = await interaction.deferReply({ fetchReply: true })
         const ping = this.getMillisecondsFromSnowflake(reply.id) - interaction.createdTimestamp
         const embed: Partial<MessageEmbed> = {

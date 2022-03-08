@@ -1,90 +1,88 @@
-import { EVENTS } from '#constants'
+import { ENVIRONMENT } from '#config'
 import { SakuraCommand } from '#structures'
-import type { SakuraCommandOptions } from '#types'
 import { extractCodes, isNewsOrTextChannel } from '#utils'
-import { ApplyOptions } from '@sapphire/decorators'
-import { type CategoryChannel, type CommandInteraction, type CommandInteractionOptionResolver, type Message, type MessageEmbed, Permissions, Collection } from 'discord.js'
+import { type ApplicationCommandRegistry, UserError, RegisterBehavior } from '@sapphire/framework'
+import { type CategoryChannel, type CommandInteraction, type Message, type MessageEmbed, Permissions, Collection } from 'discord.js'
 
-@ApplyOptions<SakuraCommandOptions>({
-    description: 'Add to or remove channels from the category list.',
-    parameters: [
-        {
-            description: 'Add a category to the list.',
-            name: 'add',
-            options: [
-                {
-                    channelTypes: ['GUILD_CATEGORY'],
-                    description: 'The category to add.',
-					name: 'category',
-					type: 'CHANNEL',
-					required: true
-                }
-            ],
-            type: 'SUB_COMMAND'
-        },
-        {
-            description: 'Remove a category from the list.',
-            name: 'remove',
-            options: [
-                {
-                    channelTypes: ['GUILD_CATEGORY'],
-                    description: 'The category to remove.',
-					name: 'category',
-					type: 'CHANNEL',
-					required: true
-                }
-            ],
-            type: 'SUB_COMMAND'
-        }
-    ],
-    type: 'CHAT_INPUT'
-})
 export class CategoryCommand extends SakuraCommand {
-    public async interact(interaction: CommandInteraction<'cached'>, options: Omit<CommandInteractionOptionResolver<'cached'>, 'getMessage' | 'getFocused'>) {
+    // public override registerApplicationCommands(registry: ApplicationCommandRegistry) {
+    //     registry.registerChatInputCommand({
+    //         description: 'Add to or remove channels from the category list.',
+    //         name: this.name,
+    //         options: [
+    //             {
+    //                 description: 'Add a category to the list.',
+    //                 name: 'add',
+    //                 options: [
+    //                     {
+    //                         channelTypes: ['GUILD_CATEGORY'],
+    //                         description: 'The category to add.',
+    //                         name: 'category',
+    //                         type: 'CHANNEL',
+    //                         required: true
+    //                     }
+    //                 ],
+    //                 type: 'SUB_COMMAND'
+    //             },
+    //             {
+    //                 description: 'Remove a category from the list.',
+    //                 name: 'remove',
+    //                 options: [
+    //                     {
+    //                         channelTypes: ['GUILD_CATEGORY'],
+    //                         description: 'The category to remove.',
+    //                         name: 'category',
+    //                         type: 'CHANNEL',
+    //                         required: true
+    //                     }
+    //                 ],
+    //                 type: 'SUB_COMMAND'
+    //             }
+    //         ]
+    //     }, {
+    //         behaviorWhenNotIdentical: RegisterBehavior.Overwrite,
+	// 		guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : [],
+	// 		idHints: ['950620460125675562']
+	// 	})
+    // }
+
+    public async chatInputRun(interaction: CommandInteraction) {
 		await interaction.deferReply()
         
-        const { client, settings } = this.container
+        const { database } = this.container
+        const { options } = interaction
         const subcommand = options.getSubcommand(true)
         const category = options.getChannel('category') as CategoryChannel
 
-        if (!category) {
-            client.emit(EVENTS.INTERACTION_ERROR, new Error('No category found.'), interaction)
-            return
-        }
+        if (!category)
+            throw new UserError({ identifier: null, message: 'No category found.' })
 
         const channelId = BigInt(category.id)
         const guildId = BigInt(interaction.guildId)
-        const list = settings.read(guildId, 'categoryChannelIds')
+        const list = database.readSetting(guildId, 'categoryChannelIds')
         const inList = list.includes(channelId)
 
-        if ((subcommand === 'add') && inList) {
-            client.emit(EVENTS.INTERACTION_ERROR, new Error('This category has already been added.'), interaction)
-            return
-        }
-        if ((subcommand === 'remove') && !inList) {
-            client.emit(EVENTS.INTERACTION_ERROR, new Error('This category is not in the list.'), interaction)
-            return
-        }
-
-        const { me } = interaction.guild
-
         if (subcommand === 'add') {
+            if (inList)
+                throw new UserError({ identifier: null, message: 'This category has already been added.' })
+
+            const { me } = interaction.guild
             const channels = [...category.children.values()]
             const issues = channels.filter(channel => channel.isText() && !channel.permissionsFor(me).has(this.minimumPermissions))
 
-            if (issues.length) {
+            if (issues.length)
                 // @ts-expect-error
-                const message = `I am unable to read ${ new Intl.ListFormat().format(issues.map(issue => `<#${ issue.id }>`)) }. `
-                client.emit(EVENTS.INTERACTION_ERROR, new Error(message), interaction)
-                return
-            } else 
+                throw new UserError({ identifier: null, message: `I am unable to read ${ new Intl.ListFormat().format(issues.map(issue => `<#${ issue.id }>`)) }.` })
+            else 
                 await this.processCategory(category)
         }
+        if ((subcommand === 'remove') && !inList)
+            throw new UserError({ identifier: null, message: 'This category is not in the list.' })
 
         const updatedList = (subcommand === 'add')
             ? [...list, channelId]
             : list.filter(id => id !== channelId)
-        await settings.update(guildId, { categoryChannelIds: updatedList })
+        await database.updateSetting(guildId, { categoryChannelIds: updatedList })
 
         const embed: Partial<MessageEmbed> = { color: 0xF8F8FF, description: `${ category } will ${ (subcommand === 'add') ? 'now' : 'no longer' } be checked during invite checks.` }
         await interaction.editReply({ embeds: [embed] })
@@ -116,7 +114,7 @@ export class CategoryCommand extends SakuraCommand {
         if (!codes.length)
             return
 
-        await this.container.invites.createMany(guildId, codes)
+        await this.container.database.createInvites(guildId, codes)
     }
 
     private readonly minimumPermissions = new Permissions(['READ_MESSAGE_HISTORY', 'VIEW_CHANNEL']).freeze()

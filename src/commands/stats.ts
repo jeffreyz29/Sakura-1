@@ -1,16 +1,23 @@
+import { ENVIRONMENT } from '#config'
 import { SakuraCommand } from '#structures'
-import type { SakuraCommandOptions } from '#types'
 import { addCommas } from '#utils'
-import { ApplyOptions } from '@sapphire/decorators'
+import { ApplicationCommandRegistry, RegisterBehavior } from '@sapphire/framework'
 import type { CommandInteraction, MessageEmbed } from 'discord.js'
 import prettyMilliseconds from 'pretty-ms'
 
-@ApplyOptions<SakuraCommandOptions>({
-    description: 'Displays random metrics of interest.',
-    type: 'CHAT_INPUT'
-})
 export class PingCommand extends SakuraCommand {
-    public async interact(interaction: CommandInteraction<'cached'>) {
+	// public override registerApplicationCommands(registry: ApplicationCommandRegistry) {
+	// 	registry.registerChatInputCommand({
+	// 		description: 'Displays random metrics of interest.',
+	// 		name: this.name
+	// 	}, {
+	// 		behaviorWhenNotIdentical: RegisterBehavior.Overwrite,
+	// 		guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : [],
+	// 		idHints: ['950620459492335706']
+	// 	})
+	// }
+
+    public async chatInputRun(interaction: CommandInteraction<'cached'>) {
 		await interaction.deferReply()
 
 		const { client } = this.container

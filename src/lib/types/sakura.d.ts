@@ -1,6 +1,5 @@
-import type { CommandJSON, CommandOptions } from '@sapphire/framework'
-import type { ApplicationCommandOptionData, ApplicationCommandType } from 'discord.js'
-
+import type { CommandOptions, PieceOptions } from '@sapphire/framework'
+import { Except } from 'type-fest'
 export interface CategoryCounts {
     channels: ChannelCounts[]
     issues: number
@@ -13,8 +12,4 @@ export interface ChannelCounts {
     good: number
 }
 
-export type SakuraCommandOptions = Pick<CommandOptions, 'description' | 'enabled' | 'name'> & {
-    defaultPermission?: boolean
-    parameters?: ApplicationCommandOption[]
-    type: ApplicationCommandType
-}
+export type SakuraCommandOptions = Pick<CommandOptions, 'description'> & PieceOptions
