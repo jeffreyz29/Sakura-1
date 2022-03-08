@@ -39,8 +39,7 @@ export class SetCommand extends SakuraCommand {
 			]
 		}, {
 			behaviorWhenNotIdentical: RegisterBehavior.Overwrite,
-			guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : [],
-			idHints: ['950894027170013184']
+			guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : []
 		})
 	}
 

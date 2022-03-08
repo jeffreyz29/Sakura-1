@@ -11,8 +11,7 @@ export class PingCommand extends SakuraCommand {
 			name: this.name
 		}, {
             behaviorWhenNotIdentical: RegisterBehavior.Overwrite,
-            guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : [],
-			idHints: ['950894027899805736']
+            guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : []
 		})
 	}
 

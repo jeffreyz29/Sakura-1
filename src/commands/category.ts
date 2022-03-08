@@ -41,8 +41,7 @@ export class CategoryCommand extends SakuraCommand {
             ]
         }, {
             behaviorWhenNotIdentical: RegisterBehavior.Overwrite,
-			guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : [],
-			idHints: ['950894111618134017']
+			guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : []
 		})
     }
 

@@ -16,8 +16,7 @@ export class CheckCommand extends SakuraCommand {
 			name: this.name
 		}, {
             behaviorWhenNotIdentical: RegisterBehavior.Overwrite,
-			guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : [],
-			idHints: ['950894024317890620']
+			guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : []
 		})
 	}
 

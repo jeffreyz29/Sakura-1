@@ -40,8 +40,7 @@ export class IgnoreCommand extends SakuraCommand {
             ]
 		}, {
             behaviorWhenNotIdentical: RegisterBehavior.Overwrite,
-			guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : [],
-			idHints: ['950894025987211285']
+			guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : []
 		})
 	}
 
