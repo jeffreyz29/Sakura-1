@@ -10,25 +10,25 @@ import prettyMilliseconds from 'pretty-ms'
 
 
 export class CheckCommand extends SakuraCommand {
-	// public override registerApplicationCommands(registry: ApplicationCommandRegistry) {
-	// 	registry.registerChatInputCommand({
-	// 		description: 'Runs an invite check.',
-	// 		name: this.name
-	// 	}, {
-    //         behaviorWhenNotIdentical: RegisterBehavior.Overwrite,
-	// 		guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : [],
-	// 		idHints: ['950620372607324190']
-	// 	})
-	// }
+	public override registerApplicationCommands(registry: ApplicationCommandRegistry) {
+		registry.registerChatInputCommand({
+			description: 'Runs an invite check.',
+			name: this.name
+		}, {
+            behaviorWhenNotIdentical: RegisterBehavior.Overwrite,
+			guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : [],
+			idHints: ['950894024317890620']
+		})
+	}
 
     public async chatInputRun(interaction: CommandInteraction) {
-        await interaction.deferReply()
-
         const { client, database, queue } = this.container
         const guildId = BigInt(interaction.guildId)
         const { categoryChannelIds, checkChannelId, checkEmbedColor, ignoreChannelIds, inCheck, lastInviteCheckAt = new Date } = database.readSetting(guildId)
         const now = Date.now()
         const checkCounts: CategoryCounts[] = []
+
+        await interaction.deferReply()
         
         if (now <= (lastInviteCheckAt?.getTime() ?? 0) + INVITE_CHECK_COOLDOWN) {
             const seconds = Math.floor(((lastInviteCheckAt?.getTime() ?? 0) + INVITE_CHECK_COOLDOWN) / 1000)
@@ -58,15 +58,13 @@ export class CheckCommand extends SakuraCommand {
         await database.createAuditEntry('INVITE_CHECK_START', { guildId: interaction.guildId })
         const timerStart = hrtime.bigint()
         const startEmbed: Partial<MessageEmbed> = { color: checkEmbedColor, description: `${ client.user.username } is checking your invites now!` }
+
         await interaction.editReply({ embeds: [startEmbed] })    
         
         const isAddedCategoryChannel = (channel: GuildBasedChannelTypes): channel is CategoryChannel => (channel.type === 'GUILD_CATEGORY') && categoryChannelIds.includes(BigInt(channel.id))
         const sortedCategoriesToCheck = guild.channels.cache
             .filter(isAddedCategoryChannel)
             .sort((c1, c2) => c1.position - c2.position)
-
-        
-
         const shouldCheckChannel = (channel: GuildBasedChannelTypes): channel is NewsChannel | TextChannel => isNewsOrTextChannel(channel) && !ignoreChannelIds.includes(BigInt(channel.id))
         const { me } = interaction.guild
 

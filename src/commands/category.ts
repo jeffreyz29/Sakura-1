@@ -5,51 +5,48 @@ import { type ApplicationCommandRegistry, UserError, RegisterBehavior } from '@s
 import { type CategoryChannel, type CommandInteraction, type Message, type MessageEmbed, Permissions, Collection } from 'discord.js'
 
 export class CategoryCommand extends SakuraCommand {
-    // public override registerApplicationCommands(registry: ApplicationCommandRegistry) {
-    //     registry.registerChatInputCommand({
-    //         description: 'Add to or remove channels from the category list.',
-    //         name: this.name,
-    //         options: [
-    //             {
-    //                 description: 'Add a category to the list.',
-    //                 name: 'add',
-    //                 options: [
-    //                     {
-    //                         channelTypes: ['GUILD_CATEGORY'],
-    //                         description: 'The category to add.',
-    //                         name: 'category',
-    //                         type: 'CHANNEL',
-    //                         required: true
-    //                     }
-    //                 ],
-    //                 type: 'SUB_COMMAND'
-    //             },
-    //             {
-    //                 description: 'Remove a category from the list.',
-    //                 name: 'remove',
-    //                 options: [
-    //                     {
-    //                         channelTypes: ['GUILD_CATEGORY'],
-    //                         description: 'The category to remove.',
-    //                         name: 'category',
-    //                         type: 'CHANNEL',
-    //                         required: true
-    //                     }
-    //                 ],
-    //                 type: 'SUB_COMMAND'
-    //             }
-    //         ]
-    //     }, {
-    //         behaviorWhenNotIdentical: RegisterBehavior.Overwrite,
-	// 		guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : [],
-	// 		idHints: ['950620460125675562']
-	// 	})
-    // }
+    public override registerApplicationCommands(registry: ApplicationCommandRegistry) {
+        registry.registerChatInputCommand({
+            description: 'Add to or remove channels from the category list.',
+            name: this.name,
+            options: [
+                {
+                    description: 'Add a category to the list.',
+                    name: 'add',
+                    options: [
+                        {
+                            channelTypes: ['GUILD_CATEGORY'],
+                            description: 'The category to add.',
+                            name: 'category',
+                            type: 'CHANNEL',
+                            required: true
+                        }
+                    ],
+                    type: 'SUB_COMMAND'
+                },
+                {
+                    description: 'Remove a category from the list.',
+                    name: 'remove',
+                    options: [
+                        {
+                            channelTypes: ['GUILD_CATEGORY'],
+                            description: 'The category to remove.',
+                            name: 'category',
+                            type: 'CHANNEL',
+                            required: true
+                        }
+                    ],
+                    type: 'SUB_COMMAND'
+                }
+            ]
+        }, {
+            behaviorWhenNotIdentical: RegisterBehavior.Overwrite,
+			guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : [],
+			idHints: ['950894111618134017']
+		})
+    }
 
     public async chatInputRun(interaction: CommandInteraction) {
-		await interaction.deferReply()
-        
-        const { database } = this.container
         const { options } = interaction
         const subcommand = options.getSubcommand(true)
         const category = options.getChannel('category') as CategoryChannel
@@ -59,8 +56,11 @@ export class CategoryCommand extends SakuraCommand {
 
         const channelId = BigInt(category.id)
         const guildId = BigInt(interaction.guildId)
+        const { database } = this.container
         const list = database.readSetting(guildId, 'categoryChannelIds')
         const inList = list.includes(channelId)
+
+        await interaction.deferReply()
 
         if (subcommand === 'add') {
             if (inList)

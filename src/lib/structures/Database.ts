@@ -1,5 +1,5 @@
 import type { AuditEvent, Invite, Setting, Prisma } from '@prisma/client'
-import { container } from '@sapphire/framework'
+import { container, UserError } from '@sapphire/framework'
 import { Except, RequireAtLeastOne } from 'type-fest'
 
 export class Database {
@@ -78,6 +78,9 @@ export class Database {
 	public readSetting<K extends keyof Setting>(guildId: bigint, field: K): Setting[K]
 	public readSetting<K extends keyof Setting>(guildId: bigint, field?: K) {
         const setting = this.#settings.get(guildId)
+
+        if (!setting)
+            throw new UserError({ identifier: null, message: 'Please kick and reinvite Sakura.' })
 
 		return field
 			? setting?.[field]

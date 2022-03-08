@@ -6,16 +6,16 @@ import type { CommandInteraction, MessageEmbed } from 'discord.js'
 import prettyMilliseconds from 'pretty-ms'
 
 export class PingCommand extends SakuraCommand {
-	// public override registerApplicationCommands(registry: ApplicationCommandRegistry) {
-	// 	registry.registerChatInputCommand({
-	// 		description: 'Displays random metrics of interest.',
-	// 		name: this.name
-	// 	}, {
-	// 		behaviorWhenNotIdentical: RegisterBehavior.Overwrite,
-	// 		guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : [],
-	// 		idHints: ['950620459492335706']
-	// 	})
-	// }
+	public override registerApplicationCommands(registry: ApplicationCommandRegistry) {
+		registry.registerChatInputCommand({
+			description: 'Displays random metrics of interest.',
+			name: this.name
+		}, {
+			behaviorWhenNotIdentical: RegisterBehavior.Overwrite,
+			guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : [],
+			idHints: ['950894111018336296']
+		})
+	}
 
     public async chatInputRun(interaction: CommandInteraction<'cached'>) {
 		await interaction.deferReply()

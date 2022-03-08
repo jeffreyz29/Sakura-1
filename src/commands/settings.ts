@@ -4,22 +4,23 @@ import { ApplicationCommandRegistry, RegisterBehavior } from '@sapphire/framewor
 import { CommandInteraction, Guild, MessageEmbed } from 'discord.js'
 
 export class SettingsCommand extends SakuraCommand {
-	// public override registerApplicationCommands(registry: ApplicationCommandRegistry) {
-	// 	registry.registerChatInputCommand({
-	// 		description: 'Displays a guild\'s settings.',
-	// 		name: this.name
-	// 	}, {
-    //         behaviorWhenNotIdentical: RegisterBehavior.Overwrite,
-	// 		guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : [],
-	// 		idHints: ['950620459492335706']
-	// 	})
-	// }
+	public override registerApplicationCommands(registry: ApplicationCommandRegistry) {
+		registry.registerChatInputCommand({
+			description: 'Displays a guild\'s settings.',
+			name: this.name
+		}, {
+            behaviorWhenNotIdentical: RegisterBehavior.Overwrite,
+			guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : [],
+			idHints: ['950894025022505010']
+		})
+	}
 
-    public async chatInputRun(interaction: CommandInteraction<'cached'>) {
-        await interaction.deferReply()
-        
+    public async chatInputRun(interaction: CommandInteraction<'cached'>) {       
         const { guild } = interaction
         const { categoryChannelIds, checkChannelId, checkEmbedColor, ignoreChannelIds } = this.container.database.readSetting(BigInt(interaction.guildId))
+
+        await interaction.deferReply()
+        
         const embed: Partial<MessageEmbed> = {
             author: {
                 iconURL: guild.iconURL({ dynamic: true, size: 1024 }),

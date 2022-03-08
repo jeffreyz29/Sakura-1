@@ -4,50 +4,48 @@ import { type ApplicationCommandRegistry, UserError, RegisterBehavior } from '@s
 import type { CommandInteraction, MessageEmbed } from 'discord.js'
 
 export class IgnoreCommand extends SakuraCommand {
-	// public override registerApplicationCommands(registry: ApplicationCommandRegistry) {
-	// 	registry.registerChatInputCommand({
-    //         description: 'Add to or remove channels from the "ignored channels" list.',
-    //         name: this.name,
-    //         options: [
-    //             {
-    //                 description: 'Add a channel to the "ignored channels" list.',
-    //                 name: 'add',
-    //                 options: [
-    //                     {
-    //                         channelTypes: ['GUILD_NEWS', 'GUILD_TEXT'],
-    //                         description: 'The channel to add.',
-    //                         name: 'channel',
-    //                         type: 'CHANNEL',
-    //                         required: true
-    //                     }
-    //                 ],
-    //                 type: 'SUB_COMMAND'
-    //             },
-    //             {
-    //                 description: 'Remove a channel from the "ignored channels" list.',
-    //                 name: 'remove',
-    //                 options: [
-    //                     {
-    //                         channelTypes: ['GUILD_NEWS', 'GUILD_TEXT'],
-    //                         description: 'The channel to remove.',
-    //                         name: 'channel',
-    //                         type: 'CHANNEL',
-    //                         required: true
-    //                     }
-    //                 ],
-    //                 type: 'SUB_COMMAND'
-    //             }
-    //         ]
-	// 	}, {
-    //         behaviorWhenNotIdentical: RegisterBehavior.Overwrite,
-	// 		guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : [],
-	// 		idHints: ['950620374117253140']
-	// 	})
-	// }
+	public override registerApplicationCommands(registry: ApplicationCommandRegistry) {
+		registry.registerChatInputCommand({
+            description: 'Add to or remove channels from the "ignored channels" list.',
+            name: this.name,
+            options: [
+                {
+                    description: 'Add a channel to the "ignored channels" list.',
+                    name: 'add',
+                    options: [
+                        {
+                            channelTypes: ['GUILD_NEWS', 'GUILD_TEXT'],
+                            description: 'The channel to add.',
+                            name: 'channel',
+                            type: 'CHANNEL',
+                            required: true
+                        }
+                    ],
+                    type: 'SUB_COMMAND'
+                },
+                {
+                    description: 'Remove a channel from the "ignored channels" list.',
+                    name: 'remove',
+                    options: [
+                        {
+                            channelTypes: ['GUILD_NEWS', 'GUILD_TEXT'],
+                            description: 'The channel to remove.',
+                            name: 'channel',
+                            type: 'CHANNEL',
+                            required: true
+                        }
+                    ],
+                    type: 'SUB_COMMAND'
+                }
+            ]
+		}, {
+            behaviorWhenNotIdentical: RegisterBehavior.Overwrite,
+			guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : [],
+			idHints: ['950894025987211285']
+		})
+	}
 
-    public async chatInputRun(interaction: CommandInteraction<'cached'>) {
-		await interaction.deferReply()
-        
+    public async chatInputRun(interaction: CommandInteraction<'cached'>) {       
         const { database } = this.container
         const { options } = interaction
         const subcommand = options.getSubcommand(true)
@@ -60,6 +58,8 @@ export class IgnoreCommand extends SakuraCommand {
         const guildId = BigInt(interaction.guildId)
         const list = database.readSetting(guildId, 'ignoreChannelIds')
         const inList = list.includes(channelId)
+
+        await interaction.deferReply()
 
         if ((subcommand === 'add') && inList)
             throw new UserError({ identifier: null, message: 'This channel is already ignored.' })

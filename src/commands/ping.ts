@@ -5,16 +5,16 @@ import { ApplicationCommandRegistry, RegisterBehavior } from '@sapphire/framewor
 import type { CommandInteraction, MessageEmbed } from 'discord.js'
 
 export class PingCommand extends SakuraCommand {
-	// public override registerApplicationCommands(registry: ApplicationCommandRegistry) {
-	// 	registry.registerChatInputCommand({
-	// 		description: 'Checks Discord API latency.',
-	// 		name: this.name
-	// 	}, {
-    //         behaviorWhenNotIdentical: RegisterBehavior.Overwrite,
-    //         guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : [],
-	// 		idHints: ['950620375484604416']
-	// 	})
-	// }
+	public override registerApplicationCommands(registry: ApplicationCommandRegistry) {
+		registry.registerChatInputCommand({
+			description: 'Checks Discord API latency.',
+			name: this.name
+		}, {
+            behaviorWhenNotIdentical: RegisterBehavior.Overwrite,
+            guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : [],
+			idHints: ['950894027899805736']
+		})
+	}
 
     public async chatInputRun(interaction: CommandInteraction) {
         const reply = await interaction.deferReply({ fetchReply: true })

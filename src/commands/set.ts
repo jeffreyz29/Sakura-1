@@ -4,45 +4,45 @@ import { ApplicationCommandRegistry, RegisterBehavior } from '@sapphire/framewor
 import { type ColorResolvable, type CommandInteraction, type CommandInteractionOptionResolver, type MessageEmbed, Util } from 'discord.js'
 
 export class SetCommand extends SakuraCommand {
-	// public override registerApplicationCommands(registry: ApplicationCommandRegistry) {
-	// 	registry.registerChatInputCommand({
-	// 		description: 'Modifies various server settings',
-	// 		name: this.name,
-	// 		options: [
-	// 			{
-	// 				description: 'Sets the channel to send invite check results to.',
-	// 				name: 'check-channel',
-	// 				options: [
-	// 					{
-	// 						channelTypes: ['GUILD_NEWS', 'GUILD_TEXT'],
-	// 						description: 'The check channel.',
-	// 						name: 'channel',
-	// 						type: 'CHANNEL',
-	// 						required: false
-	// 					}
-	// 				],
-	// 				type: 'SUB_COMMAND'
-	// 			},
-	// 			{
-	// 				description: 'Sets the embed color for invite check embeds.',
-	// 				name: 'check-embed-color',
-	// 				options: [
-	// 					{
-	// 						description: 'Check embed (hex) color code.',
-	// 						name: 'color',
-	// 						type: 'STRING',
-	// 						required: true
-	// 					}
-	// 				],
-	// 				type: 'SUB_COMMAND'
-	// 			}
-	// 		]
-	// 	}, {
-	// 		behaviorWhenNotIdentical: RegisterBehavior.Overwrite,
-	// 		guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : [],
-	// 		idHints: ['950620374855475260']
-	// 	})
-	// }
+	public override registerApplicationCommands(registry: ApplicationCommandRegistry) {
+		registry.registerChatInputCommand({
+			description: 'Modifies various server settings',
+			name: this.name,
+			options: [
+				{
+					description: 'Sets the channel to send invite check results to.',
+					name: 'check-channel',
+					options: [
+						{
+							channelTypes: ['GUILD_NEWS', 'GUILD_TEXT'],
+							description: 'The check channel.',
+							name: 'channel',
+							type: 'CHANNEL',
+							required: false
+						}
+					],
+					type: 'SUB_COMMAND'
+				},
+				{
+					description: 'Sets the embed color for invite check embeds.',
+					name: 'check-embed-color',
+					options: [
+						{
+							description: 'Check embed (hex) color code.',
+							name: 'color',
+							type: 'STRING',
+							required: true
+						}
+					],
+					type: 'SUB_COMMAND'
+				}
+			]
+		}, {
+			behaviorWhenNotIdentical: RegisterBehavior.Overwrite,
+			guildIds: ENVIRONMENT === 'development' ? ['903369282518396988'] : [],
+			idHints: ['950894027170013184']
+		})
+	}
 
     public async chatInputRun(interaction: CommandInteraction) {
 		await interaction.deferReply()
