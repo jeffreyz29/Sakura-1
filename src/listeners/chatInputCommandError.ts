@@ -7,6 +7,9 @@ export class SakuraListener extends Listener {
     public async run({ message }: UserError, { interaction }: ChatInputCommandErrorPayload) {
         const embed: Partial<MessageEmbed> = { color: 0xF8F8FF, description: message }
 
-        await interaction.reply({ embeds: [embed], ephemeral: true })
+        if (interaction.deferred)
+            await interaction.editReply({ embeds: [embed] })
+        else
+            await interaction.reply({ embeds: [embed] })
     }
 }

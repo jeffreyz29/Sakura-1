@@ -43,14 +43,12 @@ model Invite {
 
 model Setting {
     guildId            BigInt    @id
-    checkChannelId     BigInt?
+    resultsChannelId   BigInt?
     categoryChannelIds BigInt[]
-    ignoreChannelIds   BigInt[]
-    checkEmbedColor    Int       @default(16316671)
-    lastInviteCheckAt  DateTime?
+    ignoredChannelIds  BigInt[]
+    embedColor         Int       @default(16316671)
+    lastCheck          DateTime?
     inCheck            Boolean   @default(false)
-    createdAt          DateTime  @default(now())
-    updatedAt          DateTime  @updatedAt
 
     @@unique([guildId])
     @@map("setting")

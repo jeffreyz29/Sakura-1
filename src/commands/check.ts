@@ -12,7 +12,7 @@ import prettyMilliseconds from 'pretty-ms'
 export class CheckCommand extends SakuraCommand {
 	public override registerApplicationCommands(registry: ApplicationCommandRegistry) {
 		registry.registerChatInputCommand({
-			description: 'Runs an invite check.',
+			description: 'Runs an invite check',
 			name: this.name
 		}, {
             behaviorWhenNotIdentical: RegisterBehavior.Overwrite,
@@ -23,27 +23,27 @@ export class CheckCommand extends SakuraCommand {
     public async chatInputRun(interaction: CommandInteraction) {
         const { client, database, queue } = this.container
         const guildId = BigInt(interaction.guildId)
-        const { categoryChannelIds, checkChannelId, checkEmbedColor, ignoreChannelIds, inCheck, lastInviteCheckAt = new Date } = database.readSetting(guildId)
+        const { categoryChannelIds, resultsChannelId, embedColor, ignoredChannelIds, inCheck, lastCheck = new Date } = database.readSetting(guildId)
         const now = Date.now()
         const checkCounts: CategoryCounts[] = []
 
         await interaction.deferReply()
         
-        if (now <= (lastInviteCheckAt?.getTime() ?? 0) + INVITE_CHECK_COOLDOWN) {
-            const seconds = Math.floor(((lastInviteCheckAt?.getTime() ?? 0) + INVITE_CHECK_COOLDOWN) / 1000)
-            throw new UserError({ identifier: null, message: `You may run an invite check again at ${ Formatters.time(seconds) } (${ Formatters.time(seconds, 'R') })` })
+        if (now <= (lastCheck?.getTime() ?? 0) + INVITE_CHECK_COOLDOWN) {
+            const seconds = Math.floor(((lastCheck?.getTime() ?? 0) + INVITE_CHECK_COOLDOWN) / 1000)
+            throw new UserError({ identifier: null, message: `You may run an invite check again on ${ Formatters.time(seconds) } (${ Formatters.time(seconds, 'R') })` })
         }
-        if (!checkChannelId)
+        if (!resultsChannelId)
             throw new UserError({ identifier: null, message: 'No check channel has been set for this guild. Please set one before running an invite check.' })
-        if (checkChannelId !== BigInt(interaction.channelId))
-            throw new UserError({ identifier: null, message: `This command can only be run in <#${ checkChannelId }>.` })
+        if (resultsChannelId !== BigInt(interaction.channelId))
+            throw new UserError({ identifier: null, message: `This command can only be run in <#${ resultsChannelId }>.` })
         if (!categoryChannelIds.length)
             throw new UserError({ identifier: null, message: 'There are no categories to check. Please add some before running an invite check.' })
         if (inCheck)
             throw new UserError({ identifier: null, message: `${ client.user.username } is still checking categories for this guild. Please try again at a later time.` })
 
         const knownCodes = await database.readGuildCodes(guildId)
-        const haveAllCodesBeenUpdated = [...knownCodes.values()].every(({ isValid, updatedAt }) => isValid ? (updatedAt > lastInviteCheckAt) : true)
+        const haveAllCodesBeenUpdated = [...knownCodes.values()].every(({ isValid, updatedAt }) => isValid ? (updatedAt > lastCheck) : true)
 
         if (!haveAllCodesBeenUpdated)
             throw new UserError({ identifier: null, message: `All invites have not been updated since your last invite check. Please try again at a later time.` })
@@ -56,7 +56,7 @@ export class CheckCommand extends SakuraCommand {
         await database.updateSetting(guildId, { inCheck: true })
         await database.createAuditEntry('INVITE_CHECK_START', { guildId: interaction.guildId })
         const timerStart = hrtime.bigint()
-        const startEmbed: Partial<MessageEmbed> = { color: checkEmbedColor, description: `${ client.user.username } is checking your invites now!` }
+        const startEmbed: Partial<MessageEmbed> = { color: embedColor, description: `${ client.user.username } is checking your invites now!` }
 
         await interaction.editReply({ embeds: [startEmbed] })    
         
@@ -64,7 +64,7 @@ export class CheckCommand extends SakuraCommand {
         const sortedCategoriesToCheck = guild.channels.cache
             .filter(isAddedCategoryChannel)
             .sort((c1, c2) => c1.position - c2.position)
-        const shouldCheckChannel = (channel: GuildBasedChannelTypes): channel is NewsChannel | TextChannel => isNewsOrTextChannel(channel) && !ignoreChannelIds.includes(BigInt(channel.id))
+        const shouldCheckChannel = (channel: GuildBasedChannelTypes): channel is NewsChannel | TextChannel => isNewsOrTextChannel(channel) && !ignoredChannelIds.includes(BigInt(channel.id))
         const { me } = interaction.guild
 
         for (const { children, name } of sortedCategoriesToCheck.values()) {
@@ -74,7 +74,7 @@ export class CheckCommand extends SakuraCommand {
                 .sort((c1, c2) => c1.position - c2.position)
 
             if (!channelsToCheck.size) {
-                const emptyCategoryEmbed = this.formatCategoryEmbed(counts, checkEmbedColor)
+                const emptyCategoryEmbed = this.formatCategoryEmbed(counts, embedColor)
                 await checkChannel.send({ embeds: [emptyCategoryEmbed] })
                 continue
             }
@@ -129,18 +129,18 @@ export class CheckCommand extends SakuraCommand {
             }
 
 			checkCounts.push(counts)
-			const categoryEmbed = this.formatCategoryEmbed(counts, checkEmbedColor)
+			const categoryEmbed = this.formatCategoryEmbed(counts, embedColor)
 			await checkChannel.send({ embeds: [categoryEmbed] })  
         }
 
         const timerEnd = hrtime.bigint()
         const elapsedTime = timerEnd - timerStart
-		const endEmbed: Partial<MessageEmbed> = { color: checkEmbedColor, description: 'Invite check complete!' }
+		const endEmbed: Partial<MessageEmbed> = { color: embedColor, description: 'Invite check complete!' }
         const { totalBad, totalChannels, totalGood, totalInvites } = this.count(checkCounts)
-		const resultsEmbed = this.formatResultsEmbed(totalBad, totalChannels, totalGood, totalInvites, elapsedTime, checkEmbedColor)
+		const resultsEmbed = this.formatResultsEmbed(totalBad, totalChannels, totalGood, totalInvites, elapsedTime, embedColor)
 		
 		await checkChannel.send({ embeds: [endEmbed, resultsEmbed] })
-        await database.updateSetting(guildId, { inCheck: false, lastInviteCheckAt: new Date }) 
+        await database.updateSetting(guildId, { inCheck: false, lastCheck: new Date }) 
         await database.createAuditEntry('INVITE_CHECK_FINISH', { elapsedTime: Number(elapsedTime / BigInt(1e6)), guildId: interaction.guildId, totalBad, totalChannels, totalGood, totalInvites })
     }
 

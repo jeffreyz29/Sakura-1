@@ -26,14 +26,12 @@ CREATE TABLE "invite" (
 -- CreateTable
 CREATE TABLE "setting" (
     "guildId" BIGINT NOT NULL,
-    "checkChannelId" BIGINT,
+    "resultsChannelId" BIGINT,
     "categoryChannelIds" BIGINT[],
-    "ignoreChannelIds" BIGINT[],
-    "checkEmbedColor" INTEGER NOT NULL DEFAULT 16316671,
-    "lastInviteCheckAt" TIMESTAMP(3),
+    "ignoredChannelIds" BIGINT[],
+    "embedColor" INTEGER NOT NULL DEFAULT 16316671,
+    "lastCheck" TIMESTAMP(3),
     "inCheck" BOOLEAN NOT NULL DEFAULT false,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "setting_pkey" PRIMARY KEY ("guildId")
 );

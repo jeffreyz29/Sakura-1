@@ -7,16 +7,16 @@ import { type CategoryChannel, type CommandInteraction, type Message, type Messa
 export class CategoryCommand extends SakuraCommand {
     public override registerApplicationCommands(registry: ApplicationCommandRegistry) {
         registry.registerChatInputCommand({
-            description: 'Add to or remove channels from the category list.',
+            description: 'Add to or remove channels from the category list',
             name: this.name,
             options: [
                 {
-                    description: 'Add a category to the list.',
+                    description: 'Add a category to the list',
                     name: 'add',
                     options: [
                         {
                             channelTypes: ['GUILD_CATEGORY'],
-                            description: 'The category to add.',
+                            description: 'The category to add',
                             name: 'category',
                             type: 'CHANNEL',
                             required: true
@@ -25,12 +25,12 @@ export class CategoryCommand extends SakuraCommand {
                     type: 'SUB_COMMAND'
                 },
                 {
-                    description: 'Remove a category from the list.',
+                    description: 'Remove a category from the list',
                     name: 'remove',
                     options: [
                         {
                             channelTypes: ['GUILD_CATEGORY'],
-                            description: 'The category to remove.',
+                            description: 'The category to remove',
                             name: 'category',
                             type: 'CHANNEL',
                             required: true
@@ -68,7 +68,7 @@ export class CategoryCommand extends SakuraCommand {
             const { me } = interaction.guild
             const channels = [...category.children.values()]
             const issues = channels.filter(channel => channel.isText() && !channel.permissionsFor(me).has(this.minimumPermissions))
-
+            
             if (issues.length)
                 // @ts-expect-error
                 throw new UserError({ identifier: null, message: `I am unable to read ${ new Intl.ListFormat().format(issues.map(issue => `<#${ issue.id }>`)) }.` })
@@ -77,6 +77,8 @@ export class CategoryCommand extends SakuraCommand {
         }
         if ((subcommand === 'remove') && !inList)
             throw new UserError({ identifier: null, message: 'This category is not in the list.' })
+
+        
 
         const updatedList = (subcommand === 'add')
             ? [...list, channelId]

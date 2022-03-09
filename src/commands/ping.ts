@@ -7,7 +7,7 @@ import type { CommandInteraction, MessageEmbed } from 'discord.js'
 export class PingCommand extends SakuraCommand {
 	public override registerApplicationCommands(registry: ApplicationCommandRegistry) {
 		registry.registerChatInputCommand({
-			description: 'Checks Discord API latency.',
+			description: 'Checks Discord API latency',
 			name: this.name
 		}, {
             behaviorWhenNotIdentical: RegisterBehavior.Overwrite,

@@ -17,16 +17,16 @@ export class SakuraListener extends Listener {
         if (!setting)
             return
 
-        let { categoryChannelIds, checkChannelId, ignoreChannelIds } = setting        
+        let { categoryChannelIds, ignoredChannelIds, resultsChannelId } = setting        
 
 		if (categoryChannelIds.includes(channelId))
             categoryChannelIds = categoryChannelIds.filter(id => id !== channelId)
-		if (checkChannelId === channelId)
-            checkChannelId = null
-		if (ignoreChannelIds.includes(channelId))
-            ignoreChannelIds = ignoreChannelIds.filter(id => id !== channelId)
+        if (ignoredChannelIds.includes(channelId))
+            ignoredChannelIds = ignoredChannelIds.filter(id => id !== channelId)
+        if (resultsChannelId === channelId)
+            resultsChannelId = null
 
-        await database.updateSetting(guildId, { categoryChannelIds, checkChannelId, ignoreChannelIds })
+        await database.updateSetting(guildId, { categoryChannelIds, ignoredChannelIds, resultsChannelId })
 	}
 
     private isCategoryOrNewsOrText(channel: ChannelTypes): channel is CategoryChannel | NewsChannel | TextChannel {

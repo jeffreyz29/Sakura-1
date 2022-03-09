@@ -10,12 +10,12 @@ export class SetCommand extends SakuraCommand {
 			name: this.name,
 			options: [
 				{
-					description: 'Sets the channel to send invite check results to.',
-					name: 'check-channel',
+					description: 'Sets the channel to send invite check results to',
+					name: 'results-channel',
 					options: [
 						{
 							channelTypes: ['GUILD_NEWS', 'GUILD_TEXT'],
-							description: 'The check channel.',
+							description: 'The results channel',
 							name: 'channel',
 							type: 'CHANNEL',
 							required: false
@@ -24,11 +24,11 @@ export class SetCommand extends SakuraCommand {
 					type: 'SUB_COMMAND'
 				},
 				{
-					description: 'Sets the embed color for invite check embeds.',
-					name: 'check-embed-color',
+					description: 'Sets the embed color for invite check embeds',
+					name: 'embed-color',
 					options: [
 						{
-							description: 'Check embed (hex) color code.',
+							description: 'Invite check embed (hex) color code',
 							name: 'color',
 							type: 'STRING',
 							required: true
@@ -52,9 +52,9 @@ export class SetCommand extends SakuraCommand {
         const guildId = BigInt(interaction.guildId)
         const embed: Partial<MessageEmbed> = { color: 0xF8F8FF }
 
-        if (subcommand === 'check-channel') {
+        if (subcommand === 'results-channel') {
             const channel = options.getChannel('channel')
-			await database.updateSetting(guildId, { checkChannelId: channel ? BigInt(channel.id) : null })
+			await database.updateSetting(guildId, { resultsChannelId: channel ? BigInt(channel.id) : null })
 
             embed.description = channel
                 ? `Invite check results will now be sent in ${ channel }.`
@@ -63,7 +63,7 @@ export class SetCommand extends SakuraCommand {
             try {
                 const color = interaction.options.getString('color', true)
                 const resolvedColor = Util.resolveColor(color as ColorResolvable)
-                await database.updateSetting(guildId, { checkEmbedColor: resolvedColor })
+                await database.updateSetting(guildId, { embedColor: resolvedColor })
 
                 embed.description = `The check embed color is now #${ resolvedColor.toString(16).toUpperCase().padStart(6, '0') }.`
             } catch (error) {

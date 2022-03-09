@@ -6,7 +6,7 @@ import { CommandInteraction, Guild, MessageEmbed } from 'discord.js'
 export class SettingsCommand extends SakuraCommand {
 	public override registerApplicationCommands(registry: ApplicationCommandRegistry) {
 		registry.registerChatInputCommand({
-			description: 'Displays a guild\'s settings.',
+			description: 'Displays a guild\'s settings',
 			name: this.name
 		}, {
             behaviorWhenNotIdentical: RegisterBehavior.Overwrite,
@@ -16,7 +16,7 @@ export class SettingsCommand extends SakuraCommand {
 
     public async chatInputRun(interaction: CommandInteraction<'cached'>) {       
         const { guild } = interaction
-        const { categoryChannelIds, checkChannelId, checkEmbedColor, ignoreChannelIds } = this.container.database.readSetting(BigInt(interaction.guildId))
+        const { categoryChannelIds, embedColor, ignoredChannelIds, resultsChannelId } = this.container.database.readSetting(BigInt(interaction.guildId))
 
         await interaction.deferReply()
         
@@ -28,9 +28,9 @@ export class SettingsCommand extends SakuraCommand {
             color: 0xF8F8FF,
             fields: [
                 { inline: false, name: 'Categories', value: this.formatChannelList(guild, categoryChannelIds) ?? 'No categories added.' },
-                { inline: false, name: 'Check channel', value: `${ guild.channels.cache.get(checkChannelId?.toString()) ?? 'No channel set.' }` },
-                { inline: false, name: 'Ignored channels', value: this.formatChannelList(guild, ignoreChannelIds) ?? 'No categories added.' },
-                { inline: false, name: 'Check embed color', value: `#${ checkEmbedColor.toString(16).toUpperCase().padStart(6, '0') }` }
+                { inline: false, name: 'Embed color', value: `#${ embedColor.toString(16).toUpperCase().padStart(6, '0') }` },
+                { inline: false, name: 'Ignored channels', value: this.formatChannelList(guild, ignoredChannelIds) ?? 'No categories added.' },
+                { inline: false, name: 'Results channel', value: `${ guild.channels.cache.get(resultsChannelId?.toString()) ?? 'No channel set.' }` }                
             ]           
         }
 

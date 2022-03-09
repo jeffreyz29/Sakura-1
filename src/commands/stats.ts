@@ -8,7 +8,7 @@ import prettyMilliseconds from 'pretty-ms'
 export class PingCommand extends SakuraCommand {
 	public override registerApplicationCommands(registry: ApplicationCommandRegistry) {
 		registry.registerChatInputCommand({
-			description: 'Displays random metrics of interest.',
+			description: 'Displays random metrics of interest',
 			name: this.name
 		}, {
 			behaviorWhenNotIdentical: RegisterBehavior.Overwrite,

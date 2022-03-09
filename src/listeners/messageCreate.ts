@@ -11,11 +11,11 @@ export class SakuraListener extends Listener {
 
         const { database } = this.container
         const guildId = BigInt(message.guildId)
-        const { categoryChannelIds, checkChannelId, ignoreChannelIds } = database.readSetting(guildId)
+        const { categoryChannelIds, ignoredChannelIds, resultsChannelId } = database.readSetting(guildId)
         const categoryId = BigInt(message.channel?.parentId ?? 0)
         const channelId = BigInt(message.channelId)
 
-        if (!categoryChannelIds.includes(categoryId) || ignoreChannelIds.includes(channelId) || (checkChannelId === channelId))
+        if (!categoryChannelIds.includes(categoryId) || ignoredChannelIds.includes(channelId) || (resultsChannelId === channelId))
             return
 
         const foundCodes = extractCodes(message, true)
