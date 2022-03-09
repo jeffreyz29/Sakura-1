@@ -6,7 +6,7 @@ export class SakuraPrecondition extends Precondition {
         const guildId = BigInt(interaction.guild.id)
         const setting = this.container.database.readSetting(guildId)
         const commandName = interaction.command.name
-        const commandsThatUseSettings = ['category', 'check', 'ignore', 'set', 'setting']
+        const commandsThatUseSettings = ['category', 'check', 'ignore', 'set', 'settings']
 
         return (setting || !commandsThatUseSettings.includes(commandName))
             ? this.ok()
