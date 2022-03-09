@@ -83,9 +83,6 @@ export class Database {
 	public readSetting<K extends keyof Setting>(guildId: bigint, field?: K) {
         const setting = this.#settings.get(guildId)
 
-        if (!setting)
-            throw new UserError({ identifier: null, message: 'Please kick and reinvite Sakura.' })
-
 		return field
 			? setting?.[field]
 			: setting

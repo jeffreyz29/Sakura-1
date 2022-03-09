@@ -5,6 +5,7 @@ declare module '@sapphire/framework' {
 	interface Preconditions {
 		AdministratorOnly: never
 		SakuraPermissions: never
+		SettingCheck: never
 	}
 
 	interface ScheduledTasks {

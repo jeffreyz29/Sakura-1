@@ -14,7 +14,7 @@ export class SakuraPrecondition extends Precondition {
         // @ts-expect-error
         const message = `I am missing the ${ new Intl.ListFormat().format(missingPermissionsString) } ${ missingPermissions.length === 1 ? 'permission': 'permissions' } in order to run this command.`
 
-        return this.error({ identifier: 'ClientPermissions', message })        
+        return this.error({ identifier: 'SakuraPermissions', message })        
     }
 
     private readonly minimumPermissions = new Permissions(['EMBED_LINKS', 'READ_MESSAGE_HISTORY', 'SEND_MESSAGES', 'USE_APPLICATION_COMMANDS', 'VIEW_CHANNEL']).freeze()

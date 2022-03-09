@@ -8,7 +8,7 @@ export abstract class SakuraCommand extends Command {
             {
                 name: context.name.toLowerCase(),
                 ...options,
-                preconditions: ['SakuraPermissions', 'AdministratorOnly'],
+                preconditions: ['SakuraPermissions', 'AdministratorOnly', 'SettingCheck'],
                 runIn: ['GUILD_NEWS', 'GUILD_TEXT']
             }
         )
