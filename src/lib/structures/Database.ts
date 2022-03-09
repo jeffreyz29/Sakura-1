@@ -35,6 +35,10 @@ export class Database {
         await this.createAuditEntry('GUILD_DELETE', { guildId: guildId.toString(), total: container.client.guilds.cache.size })
     }
 
+    public async deleteInvites(guildId: bigint) {
+        await this.#prisma.invite.deleteMany({ where: { guildId } })
+    }
+
     public async init() {
 		await this.#prisma.setting.updateMany({ data: { inCheck: false } })
 

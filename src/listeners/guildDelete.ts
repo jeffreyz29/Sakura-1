@@ -5,6 +5,9 @@ import { Constants, type Guild } from 'discord.js'
 @ApplyOptions<ListenerOptions>({ event: Constants.Events.GUILD_DELETE })
 export class SakuraListener extends Listener {
     public async run(guild: Guild) {
-        await this.container.database.deleteSetting(BigInt(guild.id))
+        const guildId = BigInt(guild.id)
+
+        await this.container.database.deleteSetting(guildId)
+        await this.container.database.deleteInvites(guildId)
     }
 }
