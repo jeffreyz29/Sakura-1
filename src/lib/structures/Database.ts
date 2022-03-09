@@ -35,6 +35,15 @@ export class Database {
         await this.createAuditEntry('GUILD_DELETE', { guildId: guildId.toString(), total: container.client.guilds.cache.size })
     }
 
+    public async init() {
+		await this.#prisma.setting.updateMany({ data: { inCheck: false } })
+
+		const settings = await this.#prisma.setting.findMany()
+
+		for (const setting of settings)
+			this.#settings.set(setting.guildId, setting)
+    }
+    
     public async readAuditEntries(startTime: Date, endTime: Date) {
         const records = await this.#prisma.audit.findMany({
             where: {
@@ -46,15 +55,6 @@ export class Database {
         })
 
         return records        
-    }
-
-    public async init() {
-		await this.#prisma.setting.updateMany({ data: { inCheck: false } })
-
-		const settings = await this.#prisma.setting.findMany()
-
-		for (const setting of settings)
-			this.#settings.set(setting.guildId, setting)
     }
 
     public async readCheckedCodes(amount: number): Promise<{ guildId: bigint; code: string }[]> {
