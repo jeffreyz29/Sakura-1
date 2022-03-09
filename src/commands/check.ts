@@ -46,7 +46,7 @@ export class CheckCommand extends SakuraCommand {
         const haveAllCodesBeenUpdated = [...knownCodes.values()].every(({ isValid, updatedAt }) => isValid ? (updatedAt > lastCheck) : true)
 
         if (!haveAllCodesBeenUpdated)
-            throw new UserError({ identifier: null, message: `All invites have not been updated since your last invite check. Please try again at a later time.` })
+            throw new UserError({ identifier: null, message: 'All invites have not been updated since your last invite check. Please try again at a later time.' })
        
         const { channel: checkChannel, guild } = interaction
 

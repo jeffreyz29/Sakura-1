@@ -3,8 +3,8 @@ import type PQueue from 'p-queue'
 
 declare module '@sapphire/framework' {
 	interface Preconditions {
-		ClientdPermissions: never
-		UserPermissions: never
+		AdministratorOnly: never
+		SakuraPermissions: never
 	}
 
 	interface ScheduledTasks {
