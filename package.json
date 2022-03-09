@@ -1,5 +1,5 @@
 {
-	"author": "Haitei",
+	"author": "Chiitoi",
 	"dependencies": {
 		"@prisma/client": "^3.10.0",
 		"@sapphire/decorators": "^4.3.0",
