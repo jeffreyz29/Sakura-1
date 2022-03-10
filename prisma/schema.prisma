@@ -29,7 +29,7 @@ enum AuditEvent {
 
 model Invite {
     guildId     BigInt
-    code        String
+    code        Bytes
     expiresAt   DateTime?
     isPermanent Boolean?
     isValid     Boolean?

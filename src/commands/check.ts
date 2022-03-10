@@ -42,7 +42,7 @@ export class CheckCommand extends SakuraCommand {
         if (inCheck)
             throw new UserError({ identifier: null, message: `${ client.user.username } is still checking categories for this guild. Please try again at a later time.` })
 
-        const knownCodes = await database.readGuildCodes(guildId)
+        const knownCodes = await database.readGuildInvites(guildId)
         const haveAllCodesBeenUpdated = [...knownCodes.values()].every(({ isValid, updatedAt }) => isValid ? (updatedAt > lastCheck) : true)
 
         if (!haveAllCodesBeenUpdated)
@@ -117,7 +117,7 @@ export class CheckCommand extends SakuraCommand {
                         const isPermanent = !Boolean(expiresAt) && !Boolean(invite?.maxAge) && !Boolean(invite?.maxUses)
                         isValid = Boolean(invite)
 
-                        await database.upsertCode(guildId, code, expiresAt, isPermanent, isValid)
+                        await database.upsertInvite(guildId, code, expiresAt, isPermanent, isValid)
                     }
 
                     isValid
