@@ -35,5 +35,4 @@ We take appropriate security measures to ensure your information is protected fr
 
 ## Changes to this Privacy Policy
 
-We may, at any time, and at our discrection, modify this Privacy Policy.
-Upon public posting, any such changes will become effective.
+We may, at any time, and at our sole discrection, modify this document without prior notice. Upon public posting, any such changes will become effective.
