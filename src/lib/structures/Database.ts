@@ -29,6 +29,19 @@ export class Database {
         await this.createAuditEntry('GUILD_CREATE', { guildId: guildId.toString(), total: container.client.guilds.cache.size })
     }
 
+    public async deleteInvites(days: number) {
+        const now = new Date()
+        const thirtyDaysAgo = new Date(now.setDate(now.getDate() - days))
+
+        await this.#prisma.invite.deleteMany({
+            where: {
+                createdAt: {
+                    lte: thirtyDaysAgo
+                }
+            }
+        })
+    }
+
     public async deleteSetting(guildId: bigint) {
         await this.#prisma.setting.delete({ where: { guildId } })
         this.#settings.delete(guildId)
