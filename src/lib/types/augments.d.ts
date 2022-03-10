@@ -10,6 +10,7 @@ declare module '@sapphire/framework' {
 
 	interface ScheduledTasks {
 		checkUncheckedCodes: never
+		deleteCodes: never
 		updateCheckedCodes: never
 	}
 }
