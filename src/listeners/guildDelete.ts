@@ -8,6 +8,6 @@ export class SakuraListener extends Listener {
         const guildId = BigInt(guild.id)
 
         await this.container.database.deleteSetting(guildId)
-        await this.container.database.deleteInvites(guildId)
+        await this.container.database.deleteGuildInvites(guildId)
     }
 }
