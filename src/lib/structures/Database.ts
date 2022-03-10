@@ -29,19 +29,6 @@ export class Database {
         await this.createAuditEntry('GUILD_CREATE', { guildId: guildId.toString(), total: container.client.guilds.cache.size })
     }
 
-    public async deleteInvites(days: number) {
-        const now = new Date()
-        const thirtyDaysAgo = new Date(now.setDate(now.getDate() - days))
-
-        await this.#prisma.invite.deleteMany({
-            where: {
-                createdAt: {
-                    lte: thirtyDaysAgo
-                }
-            }
-        })
-    }
-
     public async deleteSetting(guildId: bigint) {
         await this.#prisma.setting.delete({ where: { guildId } })
         this.#settings.delete(guildId)
@@ -114,6 +101,24 @@ export class Database {
         })
 
         return codes
+    }
+
+    public async recycleInvites(xDays: number) {
+        const now = new Date()
+        const xDaysAgo = new Date(now.setDate(now.getDate() - xDays))
+        const xDaysAgoInvites = await this.#prisma.invite.findMany({
+            select: { guildId: true, code: true },
+            where: { createdAt: { lte: xDaysAgo }, isValid: true }
+        })
+
+        await this.#prisma.invite.deleteMany({
+            where: {
+                createdAt: {
+                    lte: xDaysAgo
+                }
+            }
+        })
+        await this.#prisma.invite.createMany({ data: xDaysAgoInvites, skipDuplicates: true })
     }
 
 	public async updateSetting(guildId: bigint, data: RequireAtLeastOne<Except<Setting, 'guildId'>>) {
