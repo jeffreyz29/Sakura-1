@@ -78,8 +78,6 @@ export class CategoryCommand extends SakuraCommand {
         if ((subcommand === 'remove') && !inList)
             throw new UserError({ identifier: null, message: 'This category is not in the list.' })
 
-        
-
         const updatedList = (subcommand === 'add')
             ? [...list, channelId]
             : list.filter(id => id !== channelId)
@@ -110,12 +108,21 @@ export class CategoryCommand extends SakuraCommand {
         }
 
         const categoryMessages = new Collection<string, Message>().concat(...collections)
-        const codes = extractCodes(categoryMessages, true)
+        const extractedCodes = extractCodes(categoryMessages, true)
 
-        if (!codes.length)
+        if (!extractedCodes.length)
             return
 
-        await this.container.database.createInvites(guildId, codes)
+        const knownGuildCodes = await this.container.database.readGuildCodes(guildId)
+        const uniqueKnownGuildCodes = [...new Set(knownGuildCodes.map(({ code }) => code))]
+        const uniqueFilteredCodes = [...new Set(extractedCodes.filter(extractedCode => !uniqueKnownGuildCodes.includes(extractedCode)))]
+
+        if (!uniqueFilteredCodes.length)
+            return
+
+        const data = uniqueFilteredCodes.map(code => ({ guildId, code }))
+
+        await this.container.database.createInvites(data)
     }
 
     private readonly minimumPermissions = new Permissions(['READ_MESSAGE_HISTORY', 'VIEW_CHANNEL']).freeze()

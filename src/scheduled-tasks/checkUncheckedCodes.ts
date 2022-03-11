@@ -2,11 +2,11 @@ import { ScheduledTask, ScheduledTaskOptions } from '@sapphire/plugin-scheduled-
 import { fetchInvite } from '#utils'
 import { ApplyOptions } from '@sapphire/decorators'
 
-@ApplyOptions<ScheduledTaskOptions>({ cron: '20 1-23 * * *' })
+@ApplyOptions<ScheduledTaskOptions>({ cron: '0,30 1-23 * * *' })
 export class CheckUncheckedCodesTask extends ScheduledTask {
 	public async run() {
 		const { database, queue } = this.container
-		const codes = await database.readUncheckedInvites(300)
+		const codes = await database.readUncheckedCodes(150)
 
 		if (!codes.length)
 			return
@@ -17,7 +17,7 @@ export class CheckUncheckedCodesTask extends ScheduledTask {
 			const isValid = Boolean(invite)
 			const isPermanent = isValid && !Boolean(expiresAt) && !Boolean(invite?.maxAge) && !Boolean(invite?.maxUses)
 
-			await database.upsertInvite(guildId, code, expiresAt, isPermanent, isValid)
+			await database.updateInvite(guildId, code, expiresAt, isPermanent, isValid)
 		}
 	}
 }

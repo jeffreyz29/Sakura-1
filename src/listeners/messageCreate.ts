@@ -23,6 +23,8 @@ export class SakuraListener extends Listener {
         if (!foundCodes.length)
             return
 
-        await database.createInvites(guildId, foundCodes)
+        const data = foundCodes.map(code => ({ guildId, code }))
+
+        await database.createInvites(data)
     }
 }

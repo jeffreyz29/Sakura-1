@@ -42,10 +42,10 @@ export class CheckCommand extends SakuraCommand {
         if (inCheck)
             throw new UserError({ identifier: null, message: `${ client.user.username } is still checking categories for this guild. Please try again at a later time.` })
 
-        const knownCodes = await database.readGuildInvites(guildId)
-        const haveAllCodesBeenUpdated = [...knownCodes.values()].every(({ isValid, updatedAt }) => isValid ? (updatedAt > lastCheck) : true)
+        const knownInvites = await database.readGuildInvites(guildId)
+        const haveAllInvitesBeenUpdated = [...knownInvites.values()].every(({ isValid, updatedAt }) => isValid ? (updatedAt > lastCheck) : true)
 
-        if (!haveAllCodesBeenUpdated)
+        if (!haveAllInvitesBeenUpdated)
             throw new UserError({ identifier: null, message: 'All invites have not been updated since your last invite check. Please try again at a later time.' })
        
         const { channel: checkChannel, guild } = interaction
@@ -106,18 +106,19 @@ export class CheckCommand extends SakuraCommand {
 				let bad = 0, good = 0
 
 				for (const code of foundCodes) {
-                    const knownCode = knownCodes.get(code)
+                    const knownInvite = knownInvites.get(code)
                     let isValid: boolean
 
-                    if (knownCode?.isChecked)
-                        isValid = knownCode.isValid && (knownCode.isPermanent || (now < (knownCode?.expiresAt.getTime() ?? 0)))
+                    if (knownInvite?.isChecked)
+                        isValid = knownInvite.isValid && (knownInvite.isPermanent || (now < (knownInvite?.expiresAt.getTime() ?? 0)))
                     else {
                         const invite = await queue.add(fetchInvite(code), { priority: 1 })
                         const expiresAt = invite?.expiresAt ?? null
                         const isPermanent = !Boolean(expiresAt) && !Boolean(invite?.maxAge) && !Boolean(invite?.maxUses)
+
                         isValid = Boolean(invite)
 
-                        await database.upsertInvite(guildId, code, expiresAt, isPermanent, isValid)
+                        await database.insertInvite(guildId, code, expiresAt, isPermanent, isValid)
                     }
 
                     isValid

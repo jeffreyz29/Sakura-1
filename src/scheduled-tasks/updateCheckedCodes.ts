@@ -2,11 +2,11 @@ import { ScheduledTask, ScheduledTaskOptions } from '@sapphire/plugin-scheduled-
 import { fetchInvite } from '#utils'
 import { ApplyOptions } from '@sapphire/decorators'
 
-@ApplyOptions<ScheduledTaskOptions>({ cron: '40 1-23 * * *' })
+@ApplyOptions<ScheduledTaskOptions>({ cron: '15,45 1-23 * * *' })
 export class UpdateCheckedCodesTask extends ScheduledTask {
     public async run() {
         const { database, queue } = this.container
-        const codes = await database.readCheckedInvites(300)
+        const codes = await database.readCheckedCodes(150)
 
 		if (!codes.length)
 			return

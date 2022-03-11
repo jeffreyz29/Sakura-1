@@ -18,25 +18,26 @@ export class Database {
         await this.#prisma.audit.createMany({ data, skipDuplicates: true })
     }
     
-    public async createInvites(guildId: bigint, codes: string[]) {
-        const values = codes.map(code => `(${ guildId }, pgp_sym_encrypt('${ code }', '${ PGCRYPTO_KEY }'))`).join(',')
+    public async createInvites(data: { guildId: bigint, code: string }[]) {
+        const values = data.map(({ guildId, code }) => `(${ guildId }, pgp_sym_encrypt('${ code }', '${ PGCRYPTO_KEY }'))`).join(',')
+        const query = `INSERT INTO invite ("guildId", "code") VALUES ${ values };`
 
-        console.log(`INSERT INTO invite ("guildId", "code") VALUES ${ values } ON CONFLICT DO NOTHING;`)
-
-        await this.#prisma.$executeRaw`
-            INSERT INTO invite ("guildId", "code") VALUES ${ values } ON CONFLICT DO NOTHING;
-        `
+        await this.#prisma.$executeRawUnsafe(query)
     }
 
     public async createSetting(guildId: bigint) {
         const setting = await this.#prisma.setting.create({ data: { guildId, categoryChannelIds: [], ignoredChannelIds: [] } })
+        
         this.#settings.set(guildId, setting)
+
         await this.createAuditEntry('GUILD_CREATE', { guildId: guildId.toString(), total: container.client.guilds.cache.size })
     }
 
     public async deleteSetting(guildId: bigint) {
         await this.#prisma.setting.delete({ where: { guildId } })
+
         this.#settings.delete(guildId)
+
         await this.createAuditEntry('GUILD_DELETE', { guildId: guildId.toString(), total: container.client.guilds.cache.size })
     }
 
@@ -52,6 +53,13 @@ export class Database {
 		for (const setting of settings)
 			this.#settings.set(setting.guildId, setting)
     }
+
+    public async insertInvite(guildId: bigint, code: string, expiresAt: Date, isPermanent: boolean, isValid: boolean) {
+        await this.#prisma.$executeRaw`
+            INSERT INTO invite("guildId", code, "expiresAt", "isPermanent", "isValid", "isChecked")
+            VALUES(${ guildId }, pgp_sym_encrypt('${ code }', '${ PGCRYPTO_KEY }'), ${ expiresAt }, ${ isPermanent }, ${ isValid }, TRUE)
+        `
+    }
     
     public async readAuditEntries(startTime: Date, endTime: Date) {
         const records = await this.#prisma.audit.findMany({
@@ -66,8 +74,8 @@ export class Database {
         return records        
     }
 
-    public async readCheckedInvites(amount: number): Promise<{ guildId: bigint; code: string }[]> {
-        const codes = await this.#prisma.$queryRaw<{ guildId: bigint; code: string }[]>`
+    public async readCheckedCodes(amount: number): Promise<{ guildId: bigint; code: string }[]> {
+        const query = `
             SELECT
                 "guildId",
                 pgp_sym_decrypt(code, '${ PGCRYPTO_KEY }') AS code
@@ -81,12 +89,27 @@ export class Database {
             LIMIT
                 ${ amount };
         `
+        const codes = await this.#prisma.$queryRawUnsafe<{ guildId: bigint; code: string }[]>(query)
+
+        return codes
+    }
+
+    public async readGuildCodes(guildId: bigint): Promise<{ code: string }[]> {
+        const query = `
+            SELECT
+                pgp_sym_decrypt(code, '${ PGCRYPTO_KEY }') AS code
+            FROM
+                invite
+            WHERE
+                "guildId" = ${ guildId };
+        `
+        const codes = await this.#prisma.$queryRawUnsafe<{ code: string }[]>(query)
 
         return codes
     }
 
     public async readGuildInvites(guildId: bigint): Promise<Map<string, Invite>> {
-        const data = await this.#prisma.$queryRaw<Invite[]>`
+        const query = `
             SELECT
                 "guildId",
                 pgp_sym_decrypt(code, '${ PGCRYPTO_KEY }') AS code,
@@ -101,6 +124,7 @@ export class Database {
             WHERE
                 "guildId" = ${ guildId };
         `
+        const data = await this.#prisma.$queryRawUnsafe<Invite[]>(query)
         const invites = new Map<string, Invite>()
 
         for (const datum of data)
@@ -119,8 +143,8 @@ export class Database {
 			: setting
 	}
 
-    public async readUncheckedInvites(amount: number): Promise<{ guildId: bigint; code: string }[]> {
-        const codes = await this.#prisma.$queryRaw<{ guildId: bigint; code: string }[]>`
+    public async readUncheckedCodes(amount: number): Promise<{ guildId: bigint; code: string }[]> {
+        const query = `
             SELECT
                 "guildId",
                 pgp_sym_decrypt(code, '${ PGCRYPTO_KEY }') AS code
@@ -133,6 +157,7 @@ export class Database {
             LIMIT
                 ${ amount };
         `
+        const codes = await this.#prisma.$queryRawUnsafe<{ guildId: bigint; code: string }[]>(query)
 
         return codes
     }
@@ -140,7 +165,7 @@ export class Database {
     public async recycleInvites(xDays: number) {
         const now = new Date()
         const xDaysAgo = new Date(now.setDate(now.getDate() - xDays))
-        const xDaysAgoInvites = await this.#prisma.$queryRaw<{ guildId: bigint; code: string }[]>`
+        const query = `
             SELECT
                 "guildId",
                 pgp_sym_decrypt(code, '${ PGCRYPTO_KEY }') AS code
@@ -150,8 +175,9 @@ export class Database {
                 "isValid"
                 AND "createdAt" <= ${ xDaysAgo };
         `
+        const xDaysAgoCodes = await this.#prisma.$queryRawUnsafe<{ guildId: bigint; code: string }[]>(query)
 
-        if (xDaysAgoInvites.length) {
+        if (xDaysAgoCodes.length) {
             await this.#prisma.invite.deleteMany({
                 where: {
                     createdAt: {
@@ -159,16 +185,12 @@ export class Database {
                     }
                 }
             })
-            const values = xDaysAgoInvites.map(({ guildId, code }) => `(${ guildId }, pgp_sym_encrypt('${ code }', '${ PGCRYPTO_KEY }'))`).join(',')
-
-            await this.#prisma.$executeRaw`
-                INSERT INTO invite ("guildId", "code") VALUES ${ values } ON CONFLICT DO NOTHING;
-            `
+            await this.createInvites(xDaysAgoCodes)
         }
     }
 
     public async updateInvite(guildId: bigint, code: string, expiresAt: Date, isPermanent: boolean, isValid: boolean) {
-        await this.#prisma.$executeRaw`
+        const query = `
             UPDATE invite
             SET 
                 "expiresAt" = ${ expiresAt },
@@ -178,26 +200,14 @@ export class Database {
             WHERE
                 guildId = ${ guildId }
                 AND code = pgp_sym_encrypt('${ code }', '${ PGCRYPTO_KEY }')
-            `;
+        `
+
+        await this.#prisma.$executeRawUnsafe(query)
     }
 
 	public async updateSetting(guildId: bigint, data: RequireAtLeastOne<Except<Setting, 'guildId'>>) {
         const setting = await this.#prisma.setting.update({ data, where: { guildId } })
+
         this.#settings.set(guildId, setting)
 	}
-
-    public async upsertInvite(guildId: bigint, code: string, expiresAt: Date, isPermanent: boolean, isValid: boolean) {
-        await this.#prisma.$executeRaw`
-            INSERT INTO invite("guildId", code, "expiresAt", "isPermanent", "isValid", "isChecked")
-            VALUES(${ guildId }, pgp_sym_encrypt('${ code }', '${ PGCRYPTO_KEY }'), ${ expiresAt }, ${ isPermanent }, ${ isValid }, TRUE)
-            ON CONFLICT("guildId", "code")
-            DO
-            UPDATE SET
-                expires_at = EXCLUDED.expires_at,
-                is_permanent = EXCLUDED.is_permanent,
-                is_valid = EXCLUDED.is_valid,
-                is_checked = TRUE,
-                updated_at = CURRENT_TIMESTAMP
-        `
-    }
 }
