@@ -28,6 +28,7 @@ enum AuditEvent {
 }
 
 model Invite {
+    id          Int       @id @default(autoincrement())
     guildId     BigInt
     code        Bytes
     expiresAt   DateTime?
@@ -35,9 +36,9 @@ model Invite {
     isValid     Boolean?
     isChecked   Boolean   @default(false)
     createdAt   DateTime  @default(now())
-    updatedAt   DateTime?  @updatedAt
+    updatedAt   DateTime? @updatedAt
 
-    @@unique([guildId, code])
+    @@unique([id])
     @@map("invite")
 }
 

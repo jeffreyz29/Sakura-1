@@ -11,13 +11,13 @@ export class UpdateCheckedCodesTask extends ScheduledTask {
 		if (!codes.length)
 			return
 
-        for (const { guildId, code } of codes) {
+        for (const { id, code } of codes) {
             const invite = await queue.add(fetchInvite(code), { priority: 0 })
             const expiresAt = invite?.expiresAt ?? null
             const isValid = Boolean(invite)
             const isPermanent = isValid && !Boolean(expiresAt) && !Boolean(invite?.maxAge) && !Boolean(invite?.maxUses)
 
-            await database.updateInvite(guildId, code, expiresAt, isPermanent, isValid)
+            await database.updateInvite(id, expiresAt, isPermanent, isValid)
         }
     }
 }

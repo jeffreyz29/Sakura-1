@@ -19,7 +19,7 @@ export class Database {
     }
     
     public async createInvites(data: { guildId: bigint, code: string }[]) {
-        const values = data.map(({ guildId, code }) => `(${ guildId }, pgp_sym_encrypt('${ code }', '${ PGCRYPTO_KEY }'))`).join(',')
+        const values = data.map(({ guildId, code }) => `(${ guildId.toString() }, pgp_sym_encrypt('${ code }', '${ PGCRYPTO_KEY }'))`).join(',')
         const query = `INSERT INTO invite ("guildId", "code") VALUES ${ values };`
 
         await this.#prisma.$executeRawUnsafe(query)
@@ -56,8 +56,8 @@ export class Database {
 
     public async insertInvite(guildId: bigint, code: string, expiresAt: Date, isPermanent: boolean, isValid: boolean) {
         await this.#prisma.$executeRaw`
-            INSERT INTO invite("guildId", code, "expiresAt", "isPermanent", "isValid", "isChecked")
-            VALUES(${ guildId }, pgp_sym_encrypt('${ code }', '${ PGCRYPTO_KEY }'), ${ expiresAt }, ${ isPermanent }, ${ isValid }, TRUE)
+            INSERT INTO invite("guildId", code, "expiresAt", "isPermanent", "isValid", "isChecked", "updatedAt")
+            VALUES(${ guildId.toString() }, pgp_sym_encrypt('${ code }', '${ PGCRYPTO_KEY }'), ${ expiresAt }, ${ isPermanent }, ${ isValid }, TRUE, CURRENT_TIMESTAMP)
         `
     }
     
@@ -74,10 +74,10 @@ export class Database {
         return records        
     }
 
-    public async readCheckedCodes(amount: number): Promise<{ guildId: bigint; code: string }[]> {
+    public async readCheckedCodes(amount: number): Promise<{ id: number; code: string }[]> {
         const query = `
             SELECT
-                "guildId",
+                id,
                 pgp_sym_decrypt(code, '${ PGCRYPTO_KEY }') AS code
             FROM
                 invite
@@ -89,7 +89,7 @@ export class Database {
             LIMIT
                 ${ amount };
         `
-        const codes = await this.#prisma.$queryRawUnsafe<{ guildId: bigint; code: string }[]>(query)
+        const codes = await this.#prisma.$queryRawUnsafe<{ id: number; code: string }[]>(query)
 
         return codes
     }
@@ -101,7 +101,7 @@ export class Database {
             FROM
                 invite
             WHERE
-                "guildId" = ${ guildId };
+                "guildId" = ${ guildId.toString() };
         `
         const codes = await this.#prisma.$queryRawUnsafe<{ code: string }[]>(query)
 
@@ -111,6 +111,7 @@ export class Database {
     public async readGuildInvites(guildId: bigint): Promise<Map<string, Invite>> {
         const query = `
             SELECT
+                id,
                 "guildId",
                 pgp_sym_decrypt(code, '${ PGCRYPTO_KEY }') AS code,
                 "isPermanent",
@@ -122,7 +123,7 @@ export class Database {
             FROM
                 invite
             WHERE
-                "guildId" = ${ guildId };
+                "guildId" = ${ guildId.toString() };
         `
         const data = await this.#prisma.$queryRawUnsafe<Invite[]>(query)
         const invites = new Map<string, Invite>()
@@ -143,10 +144,10 @@ export class Database {
 			: setting
 	}
 
-    public async readUncheckedCodes(amount: number): Promise<{ guildId: bigint; code: string }[]> {
+    public async readUncheckedCodes(amount: number): Promise<{ id: number; code: string }[]> {
         const query = `
             SELECT
-                "guildId",
+                id,
                 pgp_sym_decrypt(code, '${ PGCRYPTO_KEY }') AS code
             FROM
                 invite
@@ -157,7 +158,7 @@ export class Database {
             LIMIT
                 ${ amount };
         `
-        const codes = await this.#prisma.$queryRawUnsafe<{ guildId: bigint; code: string }[]>(query)
+        const codes = await this.#prisma.$queryRawUnsafe<{ id: number; code: string }[]>(query)
 
         return codes
     }
@@ -189,17 +190,17 @@ export class Database {
         }
     }
 
-    public async updateInvite(guildId: bigint, code: string, expiresAt: Date, isPermanent: boolean, isValid: boolean) {
+    public async updateInvite(id: number, expiresAt: Date, isPermanent: boolean, isValid: boolean) {
         const query = `
             UPDATE invite
             SET 
                 "expiresAt" = ${ expiresAt },
                 "isPermanent" = ${ isPermanent },
                 "isValid" = ${ isValid },
-                "isChecked" = TRUE
+                "isChecked" = TRUE,
+                "updatedAt" = CURRENT_TIMESTAMP
             WHERE
-                guildId = ${ guildId }
-                AND code = pgp_sym_encrypt('${ code }', '${ PGCRYPTO_KEY }')
+                id = ${ id }
         `
 
         await this.#prisma.$executeRawUnsafe(query)
