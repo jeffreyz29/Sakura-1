@@ -1,7 +1,6 @@
-import { REDIS_DB, REDIS_HOST, REDIS_PASSWORD, REDIS_PORT, TOKEN } from '#config'
+import { TOKEN } from '#config'
 import { Database } from '#structures'
 import { container, SapphireClient } from '@sapphire/framework'
-import { ScheduledTaskRedisStrategy } from '@sapphire/plugin-scheduled-tasks/register-redis';
 import { Intents, Options } from 'discord.js'
 import PQueue from 'p-queue'
 
@@ -31,18 +30,6 @@ export class SakuraClient extends SapphireClient {
                 ThreadMemberManager: 0,
                 VoiceStateManager: 0
             }),
-			tasks: {
-				strategy: new ScheduledTaskRedisStrategy({
-					bull: {
-						redis: {
-							db: REDIS_DB,
-							host: REDIS_HOST,
-							password: REDIS_PASSWORD,
-							port: REDIS_PORT
-						}
-					}
-				})
-			}
 		})	
 	}
 

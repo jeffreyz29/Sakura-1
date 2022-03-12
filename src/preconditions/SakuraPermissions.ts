@@ -17,5 +17,5 @@ export class SakuraPrecondition extends Precondition {
         return this.error({ identifier: 'SakuraPermissions', message })        
     }
 
-    private readonly minimumPermissions = new Permissions(['EMBED_LINKS', 'READ_MESSAGE_HISTORY', 'SEND_MESSAGES', 'USE_APPLICATION_COMMANDS', 'VIEW_CHANNEL']).freeze()
+    private readonly minimumPermissions = new Permissions(['EMBED_LINKS', 'READ_MESSAGE_HISTORY', 'SEND_MESSAGES', 'VIEW_CHANNEL']).freeze()
 }

@@ -29,7 +29,7 @@ export class SettingsCommand extends SakuraCommand {
             fields: [
                 { inline: false, name: 'Categories', value: this.formatChannelList(guild, categoryChannelIds) ?? 'No categories added.' },
                 { inline: false, name: 'Embed color', value: `#${ embedColor.toString(16).toUpperCase().padStart(6, '0') }` },
-                { inline: false, name: 'Ignored channels', value: this.formatChannelList(guild, ignoredChannelIds) ?? 'No categories added.' },
+                { inline: false, name: 'Ignored channels', value: this.formatChannelList(guild, ignoredChannelIds) ?? 'No channels ignored.' },
                 { inline: false, name: 'Results channel', value: `${ guild.channels.cache.get(resultsChannelId?.toString()) ?? 'No channel set.' }` }                
             ]           
         }

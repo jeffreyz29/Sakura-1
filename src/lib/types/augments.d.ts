@@ -7,12 +7,6 @@ declare module '@sapphire/framework' {
 		SakuraPermissions: never
 		SettingCheck: never
 	}
-
-	interface ScheduledTasks {
-		checkUncheckedCodes: never
-		deleteCodes: never
-		updateCheckedCodes: never
-	}
 }
 declare module '@sapphire/pieces' {
 	interface Container {
