@@ -1,7 +1,7 @@
 # Privacy Policy
 
-Effective: March 10, 2022  
-Last revised: March 9, 2022
+Effective: March 12, 2022  
+Last revised: March 12, 2022
 
 This document aims to be a transparent resource explaining Sakura's practices with respect to your data. For the purposes of this document,
 
