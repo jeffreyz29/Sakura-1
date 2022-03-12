@@ -27,11 +27,11 @@ We do not share your information with anyone, except to either those you give co
 
 ## Data retention
 
-We retain your information for as long as Sakura remains active in your guild or server. You may request that we delete your information at any time. If you would like to request that we delete your information, please join [the support server](https://discord.gg/wtZurTFJdH) and contact Flare#2851.
+We retain your information for as long as Sakura remains active in your guild or server. Invite codes (at rest) will only exist for a maximum of 30 days. You may request that we delete your information at any time. If you would like to request that we delete your information, please join [the support server](https://discord.gg/wtZurTFJdH) and contact Flare#2851.
 
 ## How we protect your infomation
 
-We take appropriate security measures to ensure your information is protected from unauthorized access.
+We take appropriate security measures to ensure your information is protected from unauthorized access. All extracted invite codes are encrypted using PGP encrytion at rest.
 
 ## Changes to this Privacy Policy
 
